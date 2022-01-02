@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { io } from "socket.io-client";
 
 // We import bootstrap to make our application look better.
@@ -9,16 +9,27 @@ import { NavLink } from "react-router-dom";
 
 // Here, we display our Navbar
 const Navbar = () => {
-  const [time, setTime] = React.useState("fetching");
+  const [time, setTime] = React.useState("Click to start");
+  const [timeChannel, setTimeChannel] = useState(null);
+
   React.useEffect(() => {
     const socket = io("http://localhost:5500");
     socket.on("connect", () => console.log(socket.id));
-    socket.on("connect_error", () => {
-      setTimeout(() => socket.connect(), 5500);
-    });
-    socket.on("time", (data) => setTime(data));
+    // socket.on("connect_error", () => {
+    //   setTimeout(() => socket.connect(), 5500);
+    // });
+    const socketChannel = socket.on("time", (data) => setTime(data));
+    socketChannel.disconnect();
+    setTimeChannel(socketChannel);
     socket.on("disconnect", () => setTime("server disconnected"));
   }, []);
+
+  const handleDisconnectClicked = () => {
+    timeChannel.disconnect();
+  };
+  const handleConnectClicked = () => {
+    timeChannel.connect();
+  };
 
   return (
     <div>
@@ -26,6 +37,10 @@ const Navbar = () => {
         <NavLink className='navbar-brand' to='/'>
           MongoDB time:{time}
         </NavLink>
+
+        <button onClick={handleDisconnectClicked}>Disconnect</button>
+        <button onClick={handleConnectClicked}>Connect</button>
+
         <button
           className='navbar-toggler'
           type='button'
