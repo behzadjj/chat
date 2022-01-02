@@ -1,8 +1,14 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
+const http = require("http");
+const socketIo = require("socket.io");
+
 require("dotenv").config({ path: "./config.env" });
 const port = process.env.PORT || 5000;
+
+const WSPort = process.env.WS_PORT || 5500;
+
 app.use(cors());
 app.use(express.json());
 app.use(require("./routes/record"));
@@ -13,7 +19,32 @@ app.listen(port, () => {
   // perform a database connection when server starts
   dbo.connectToServer(function (err) {
     if (err) console.error(err);
-
   });
   console.log(`Server is running on port: ${port}`);
+});
+
+// initialize socket
+
+const server = http.createServer(app);
+
+const io = socketIo(server, {
+  cors: {
+    origin: "http://localhost:3000",
+  },
+}); //in case server and client run on different urls
+io.on("connection", (socket) => {
+  console.log("client connected: ", socket.id);
+
+  socket.join("clock-room");
+
+  socket.on("disconnect", (reason) => {
+    console.log(reason);
+  });
+});
+setInterval(() => {
+  io.to("clock-room").emit("time", Math.random());
+}, 100);
+server.listen(WSPort, (err) => {
+  if (err) console.log(err);
+  console.log("Server running on Port ", WSPort);
 });
