@@ -9,7 +9,9 @@ export const UserMessages: FC<Props> = ({ messages }) => {
     <>
       <div className='user-messages'>
         {messages &&
-          messages.map((message) => <span key={message}>{message}</span>)}
+          messages.map((message) => (
+            <div key={message + Math.random()}>{message}</div>
+          ))}
       </div>
     </>
   );
