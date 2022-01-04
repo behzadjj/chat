@@ -35,15 +35,16 @@ const io = socketIo(server, {
 io.on("connection", (socket) => {
   console.log("client connected: ", socket.id);
 
-  socket.join("clock-room");
+  socket.join("chat-room");
+
+  socket.on("chat-room", (data) => {
+    io.to("chat-room").emit("chat-room", data);
+  });
 
   socket.on("disconnect", (reason) => {
     console.log(reason);
   });
 });
-setInterval(() => {
-  io.to("clock-room").emit("time", Math.random());
-}, 100);
 server.listen(WSPort, (err) => {
   if (err) console.log(err);
   console.log("Server running on Port ", WSPort);
