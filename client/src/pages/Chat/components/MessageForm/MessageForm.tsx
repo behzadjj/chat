@@ -21,6 +21,7 @@ export const MessageForm: FC<Props> = ({ onMessage }) => {
   const handleSendSubmitted = (values: FormValues) => {
     if (values.message) {
       onMessage(values.message);
+      values.message = "";
     }
   };
 
