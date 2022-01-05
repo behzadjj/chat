@@ -12,7 +12,7 @@ var { nanoid } = require("nanoid");
 // This help convert the id from string to ObjectId for the _id.
 const ObjectId = require("mongodb").ObjectId;
 
-const cache = new Map();
+const cache = require("../cache");
 
 cache.set("rooms", []);
 

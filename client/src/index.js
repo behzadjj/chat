@@ -11,6 +11,7 @@ ReactDOM.render(
       <Switch>
         <Route path='/home' component={App} />
         <Route exact path='/chat' component={Chat} />
+        <Route exact path='/chat/:roomId' component={Chat} />
         <Route exact path='' render={() => <Redirect to='/home' />} />
       </Switch>
     </BrowserRouter>

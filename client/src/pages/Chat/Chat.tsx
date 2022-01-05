@@ -1,21 +1,31 @@
-import { useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import axios from "axios";
 
 import { Gate, UsersList, MessageForm, GateModes } from "./components";
-import { UserMessages } from "./components/UserMessages";
+import { ChatMessage, UserMessages } from "./components/UserMessages";
 
 let socketChannel: any = undefined;
 
-export const Chat = () => {
+type Room = {
+  roomName: string;
+  roomId: string;
+  userId: string;
+  roomLink?: string;
+  isCreator: boolean;
+};
+
+export const Chat: FC<any> = (props) => {
   const [joined, setJoined] = useState(false);
-
   const [gateMode, setGateMode] = useState<GateModes>();
-
-  const [room, setRoom] =
-    useState<{ roomName: string; roomId: string; userId: string }>();
-
+  const [room, setRoom] = useState<Room>();
   const [chatMessages, setChatMessages] = useState([]);
+
+  useEffect(() => {
+    if (props.match.params && props.match.params.roomId) {
+      setGateMode(GateModes.JOIN);
+    }
+  }, [props.match.params]);
 
   const initializeSocket = () => {
     const socket = io("http://localhost:5500");
@@ -26,7 +36,8 @@ export const Chat = () => {
       setTimeout(() => socket.connect(), 5500);
     });
 
-    socketChannel = socket.on("chat-room", (message: string) => {
+    socketChannel = socket.on("chat-room", (stringMessage: string) => {
+      const message = JSON.parse(stringMessage) as ChatMessage;
       setChatMessages((prevState) => [...prevState, message]);
     });
     socket.on("disconnect", () => {
@@ -41,11 +52,22 @@ export const Chat = () => {
         roomName,
       })
       .then((res) => {
+        const roomLink =
+          document.location.protocol +
+          "//" +
+          document.location.host +
+          "/chat/" +
+          res.data.roomId;
+        console.log(roomLink);
         setRoom({
           roomName,
           roomId: res.data.roomId,
           userId: res.data.userId,
+          roomLink,
+          isCreator: true,
         });
+
+        navigator.clipboard.writeText(roomLink);
         initializeSocket();
       });
   };
@@ -61,15 +83,22 @@ export const Chat = () => {
           roomName: res.data.roomName,
           roomId: res.data.roomId,
           userId: res.data.userId,
+          isCreator: false,
         });
         initializeSocket();
       });
   };
 
-  const handleMessageSent = (message: string) => {
+  const handleMessageSent = (text: string) => {
     if (socketChannel) {
-      socketChannel.emit("chat-room", message);
-      console.log(message);
+      const message: ChatMessage = {
+        roomId: room.roomId,
+        text,
+        userId: room.userId,
+        sendingDate: new Date(),
+      };
+
+      socketChannel.emit("chat-room", JSON.stringify(message));
     }
   };
 
@@ -93,6 +122,7 @@ export const Chat = () => {
             gateMode={gateMode}
             onCreate={handleRoomCreated}
             onJoin={handleUserJoined}
+            roomId={props.match.params.roomId}
           ></Gate>
           <button
             onClick={() => {
@@ -107,6 +137,12 @@ export const Chat = () => {
       {joined && (
         <section>
           <h1>room name: {room.roomName}</h1>
+
+          {room.isCreator && (
+            <h3>
+              Room link: <a href={room.roomLink}>Room</a>
+            </h3>
+          )}
 
           <UsersList></UsersList>
 

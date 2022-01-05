@@ -37,12 +37,14 @@ type Props = {
   onCreate?: (username: string, roomName: string) => void;
   onJoin?: (username: string, roomId: string) => void;
   gateMode: GateModes;
+  roomId?: string;
 };
 
 export const Gate: FC<Props> = ({
   onCreate,
   gateMode = GateModes.CREATE,
   onJoin,
+  roomId,
 }) => {
   const handleCreatSubmitted = (
     values: CreateFormValues,
@@ -106,7 +108,7 @@ export const Gate: FC<Props> = ({
         )}
         {gateMode === GateModes.JOIN && (
           <Formik
-            initialValues={{ username: "", roomId: "" }}
+            initialValues={{ username: "", roomId }}
             validationSchema={joinSchema}
             onSubmit={handleJoinSubmitted}
           >
@@ -131,6 +133,7 @@ export const Gate: FC<Props> = ({
                       type='text'
                       id='roomId'
                       name='roomId'
+                      disabled={roomId !== undefined}
                       value={values.roomId}
                     />
                   </main>

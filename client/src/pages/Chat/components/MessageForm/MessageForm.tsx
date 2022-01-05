@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { Formik } from "formik";
+import { Formik, FormikHelpers } from "formik";
 import * as Yup from "yup";
 import { TextField } from "@chat/components/TextField";
 
@@ -19,11 +19,16 @@ type Props = {
 };
 
 export const MessageForm: FC<Props> = ({ onMessage }) => {
-  const handleSendSubmitted = (values: FormValues) => {
+  const handleSendSubmitted = (
+    values: FormValues,
+    { setSubmitting }: FormikHelpers<FormValues>
+  ) => {
     if (values.message) {
       onMessage(values.message);
       values.message = "";
     }
+
+    setSubmitting(false);
   };
 
   return (
