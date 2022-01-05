@@ -17,7 +17,22 @@ export const Chat = () => {
 
   const [chatMessages, setChatMessages] = useState([]);
 
-  console.log({ chatMessages });
+  const initializeSocket = () => {
+    const socket = io("http://localhost:5500");
+    socket.on("connect", () => {
+      setJoined(true);
+    });
+    socket.on("connect_error", () => {
+      setTimeout(() => socket.connect(), 5500);
+    });
+
+    socketChannel = socket.on("chat-room", (message: string) => {
+      setChatMessages((prevState) => [...prevState, message]);
+    });
+    socket.on("disconnect", () => {
+      console.log("disconnected");
+    });
+  };
 
   const handleRoomCreated = (username: string, roomName: string) => {
     axios
@@ -31,20 +46,7 @@ export const Chat = () => {
           roomId: res.data.roomId,
           userId: res.data.userId,
         });
-        const socket = io("http://localhost:5500");
-        socket.on("connect", () => {
-          setJoined(true);
-        });
-        socket.on("connect_error", () => {
-          setTimeout(() => socket.connect(), 5500);
-        });
-
-        socketChannel = socket.on("chat-room", (message: string) => {
-          setChatMessages((prevState) => [...prevState, message]);
-        });
-        socket.on("disconnect", () => {
-          console.log("disconnected");
-        });
+        initializeSocket();
       });
   };
 
@@ -60,20 +62,7 @@ export const Chat = () => {
           roomId: res.data.roomId,
           userId: res.data.userId,
         });
-        const socket = io("http://localhost:5500");
-        socket.on("connect", () => {
-          setJoined(true);
-        });
-        socket.on("connect_error", () => {
-          setTimeout(() => socket.connect(), 5500);
-        });
-
-        socketChannel = socket.on("chat-room", (message: string) => {
-          setChatMessages((prevState) => [...prevState, message]);
-        });
-        socket.on("disconnect", () => {
-          console.log("disconnected");
-        });
+        initializeSocket();
       });
   };
 

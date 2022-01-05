@@ -19,9 +19,9 @@
     "yup": "^0.32.11"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
+    "start": "craco start",
+    "build": "craco build",
+    "test": "craco test",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -43,6 +43,8 @@
     ]
   },
   "devDependencies": {
-    "@types/react": "^17.0.38"
+    "@types/react": "^17.0.38",
+    "@craco/craco": "^6.3.0",
+    "craco-alias": "^3.0.1"
   }
 }

@@ -1,13 +1,14 @@
 import { FC } from "react";
 import { Formik } from "formik";
 import * as Yup from "yup";
+import { TextField } from "@chat/components/TextField";
 
 type FormValues = {
   message: string;
 };
 
 const MessageSchema = Yup.object().shape({
-  username: Yup.string()
+  message: Yup.string()
     .min(2, "short-input")
     .max(50, "long-input")
     .required("required-input"),
@@ -33,43 +34,24 @@ export const MessageForm: FC<Props> = ({ onMessage }) => {
           validationSchema={MessageSchema}
           onSubmit={handleSendSubmitted}
         >
-          {({
-            errors,
-            touched,
-            values,
-            handleChange,
-            handleSubmit,
-            isSubmitting,
-          }) => (
+          {({ values, handleSubmit, isSubmitting }) => (
             <form onSubmit={handleSubmit}>
               <div className='chat-form'>
                 <header>
                   <h1>Message</h1>
                 </header>
                 <main>
-                  <label htmlFor='message'>Message</label>
-                  <input
-                    id='message'
+                  <TextField
+                    label='Message'
                     type='text'
+                    id='message'
                     name='message'
                     value={values.message}
-                    onChange={handleChange}
                   />
-                  <span className='input-error'>
-                    {touched && errors && errors.message ? (
-                      <div className='error'>{errors.message}</div>
-                    ) : null}
-                  </span>
                 </main>
 
                 <footer>
-                  <button
-                    type='submit'
-                    disabled={isSubmitting}
-                    onClick={() => {
-                      handleSendSubmitted(values);
-                    }}
-                  >
+                  <button type='submit' disabled={isSubmitting}>
                     Submit
                   </button>
                 </footer>

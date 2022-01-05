@@ -1,6 +1,7 @@
 import { FC } from "react";
 import { Formik, FormikHelpers } from "formik";
 import * as Yup from "yup";
+import { TextField } from "@chat/components/TextField";
 
 type CreateFormValues = {
   username: string;
@@ -17,26 +18,19 @@ export enum GateModes {
   JOIN = 1,
 }
 
+const regularValidation = Yup.string()
+  .min(2, "short-input")
+  .max(50, "long-input")
+  .required("required-input");
+
 const createSchema = Yup.object().shape({
-  username: Yup.string()
-    .min(2, "short-input")
-    .max(50, "long-input")
-    .required("required-input"),
-  roomName: Yup.string()
-    .min(2, "short-input")
-    .max(50, "long-input")
-    .required("required-input"),
+  username: regularValidation,
+  roomName: regularValidation,
 });
 
 const joinSchema = Yup.object().shape({
-  username: Yup.string()
-    .min(2, "short-input")
-    .max(50, "long-input")
-    .required("required-input"),
-  roomId0: Yup.string()
-    .min(2, "short-input")
-    .max(50, "long-input")
-    .required("required-input"),
+  username: regularValidation,
+  roomId: regularValidation,
 });
 
 type Props = {
@@ -58,9 +52,12 @@ export const Gate: FC<Props> = ({
     setSubmitting(false);
   };
 
-  const handleJoinSubmitted = (values: JoinFormValues) => {
-    console.log("awdawd");
+  const handleJoinSubmitted = (
+    values: JoinFormValues,
+    { setSubmitting }: FormikHelpers<JoinFormValues>
+  ) => {
     if (onJoin) onJoin(values.username, values.roomId);
+    setSubmitting(false);
   };
 
   return (
@@ -72,15 +69,7 @@ export const Gate: FC<Props> = ({
             validationSchema={createSchema}
             onSubmit={handleCreatSubmitted}
           >
-            {({
-              errors,
-              touched,
-              values,
-              handleChange,
-              handleSubmit,
-              isSubmitting,
-              handleBlur,
-            }) => (
+            {({ values, handleSubmit, isSubmitting }) => (
               <form onSubmit={handleSubmit}>
                 <div className='username-form'>
                   <header>
@@ -88,34 +77,21 @@ export const Gate: FC<Props> = ({
                   </header>
 
                   <main>
-                    <div className='input-group'>
-                      <label htmlFor='username'>Username</label>
-                      <input
-                        id='username'
-                        type='text'
-                        name='username'
-                        value={values.username}
-                        onBlur={handleBlur}
-                        onChange={handleChange}
-                      />
-                      <span className='input-error'>
-                        {touched.username && errors.username && errors.username}
-                      </span>
-                    </div>
-                    <div className='input-group'>
-                      <label htmlFor='roomName'>Room Name</label>
-                      <input
-                        id='roomName'
-                        type='text'
-                        name='roomName'
-                        value={values.roomName}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                      />
-                      <span className='input-error'>
-                        {touched.roomName && errors.roomName && errors.roomName}
-                      </span>
-                    </div>
+                    <TextField
+                      label='Username'
+                      type='text'
+                      id='username'
+                      name='username'
+                      value={values.username}
+                    />
+
+                    <TextField
+                      label='Room Name'
+                      type='text'
+                      id='roomName'
+                      name='roomName'
+                      value={values.roomName}
+                    />
                   </main>
 
                   <footer>
@@ -134,15 +110,7 @@ export const Gate: FC<Props> = ({
             validationSchema={joinSchema}
             onSubmit={handleJoinSubmitted}
           >
-            {({
-              errors,
-              touched,
-              values,
-              handleChange,
-              handleSubmit,
-              isSubmitting,
-              handleBlur,
-            }) => (
+            {({ values, handleSubmit, isSubmitting }) => (
               <form onSubmit={handleSubmit}>
                 <div className='username-form'>
                   <header>
@@ -150,44 +118,25 @@ export const Gate: FC<Props> = ({
                   </header>
 
                   <main>
-                    <div className='input-group'>
-                      <label htmlFor='username'>Username</label>
-                      <input
-                        id='username'
-                        type='text'
-                        name='username'
-                        value={values.username}
-                        onBlur={handleBlur}
-                        onChange={handleChange}
-                      />
-                      <span className='input-error'>
-                        {touched.username && errors.username && errors.username}
-                      </span>
-                    </div>
-                    <div className='input-group'>
-                      <label htmlFor='roomId'>Room Name</label>
-                      <input
-                        id='roomId'
-                        type='text'
-                        name='roomId'
-                        value={values.roomId}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                      />
-                      <span className='input-error'>
-                        {touched.roomId && errors.roomId && errors.roomId}
-                      </span>
-                    </div>
+                    <TextField
+                      label='Room Name'
+                      type='text'
+                      id='username'
+                      name='username'
+                      value={values.username}
+                    />
+
+                    <TextField
+                      label='Room Id'
+                      type='text'
+                      id='roomId'
+                      name='roomId'
+                      value={values.roomId}
+                    />
                   </main>
 
                   <footer>
-                    <button
-                      onClick={() => {
-                        handleJoinSubmitted(values);
-                      }}
-                      type='submit'
-                      disabled={isSubmitting}
-                    >
+                    <button type='submit' disabled={isSubmitting}>
                       Join
                     </button>
                   </footer>
