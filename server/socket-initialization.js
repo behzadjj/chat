@@ -1,33 +1,14 @@
-const express = require("express");
-const app = express();
-const cors = require("cors");
+const { nanoid } = require("nanoid");
 const http = require("http");
 const socketIo = require("socket.io");
+// This will help us connect to the database
+const dbo = require("./db/conn");
 
-require("dotenv").config({ path: "./config.env" });
-const port = process.env.PORT || 5000;
+const appStorage = require("./app-storage");
 
 const WSPort = process.env.WS_PORT || 5500;
 
-const cache = require("./cache");
-
-app.use(cors());
-app.use(express.json());
-app.use(require("./routes/record"));
-app.use(require("./routes/chatroom"));
-// get driver connection
-const dbo = require("./db/conn");
-const { nanoid } = require("nanoid");
-
-app.listen(port, () => {
-  // perform a database connection when server starts
-  dbo.connectToServer(function (err) {
-    if (err) console.error(err);
-  });
-  console.log(`Server is running on port: ${port}`);
-});
-
-// initialize socket
+const app = appStorage.get("app");
 
 const server = http.createServer(app);
 
@@ -43,8 +24,11 @@ io.on("connection", (socket) => {
 
   socket.on("chat-room", (data) => {
     const message = JSON.parse(data);
+    const messageId = nanoid();
 
-    const room = cache.get("rooms").find((x) => x.roomId === message.roomId);
+    const room = appStorage
+      .get("rooms")
+      .find((x) => x.roomId === message.roomId);
 
     if (!room) {
       return;
@@ -61,10 +45,17 @@ io.on("connection", (socket) => {
       sendingDate: message.sendingDate,
       text: message.text,
       userName: member.name,
-      messageId: nanoid(),
+      messageId,
     };
 
-    io.to("chat-room").emit("chat-room", JSON.stringify(forwardMessage));
+    let db_connect = dbo.getDb();
+    message.messageId = messageId;
+
+    db_connect.collection("chat").insertOne(message, function (err) {
+      if (err) throw err;
+
+      io.to("chat-room").emit("chat-room", JSON.stringify(forwardMessage));
+    });
   });
 
   socket.on("disconnect", (reason) => {

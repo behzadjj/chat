@@ -12,12 +12,12 @@ var { nanoid } = require("nanoid");
 // This help convert the id from string to ObjectId for the _id.
 const ObjectId = require("mongodb").ObjectId;
 
-const cache = require("../cache");
+const appStorage = require("../app-storage");
 
-cache.set("rooms", []);
+appStorage.set("rooms", []);
 
 chatroomRoutes.route("/chatroom/create").post(function (req, res) {
-  const rooms = cache.get("rooms");
+  const rooms = appStorage.get("rooms");
   const userId = nanoid();
   const roomId = nanoid();
   rooms.push({
@@ -32,13 +32,13 @@ chatroomRoutes.route("/chatroom/create").post(function (req, res) {
       },
     ],
   });
-  cache.set(rooms);
+  appStorage.set(rooms);
 
   res.json({ userId, roomId });
 });
 
 chatroomRoutes.route("/chatroom/join").post(function (req, res) {
-  const rooms = cache.get("rooms");
+  const rooms = appStorage.get("rooms");
 
   const room = rooms.find((x) => x.roomId === req.body.roomId);
 
@@ -53,7 +53,7 @@ chatroomRoutes.route("/chatroom/join").post(function (req, res) {
     rule: "member",
     userId,
   });
-  cache.set(rooms);
+  appStorage.set(rooms);
 
   res.json({ userId, roomId: req.body.roomId, roomName: room.roomName });
 });
