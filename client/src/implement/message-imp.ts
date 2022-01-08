@@ -1,12 +1,12 @@
 import { nanoid } from "nanoid";
-import { IMessage, MessageType } from "@chat/models";
+import { IMessage, MessageType, RoomUsers } from "@chat/models";
 
 export class Message<T> implements IMessage<T> {
   id?: string;
 
-  from?: string;
+  from?: RoomUsers;
 
-  to?: string[] | "all";
+  to?: RoomUsers[] | "all";
 
   // Date of sending message
   sendDate?: Date | string;
@@ -19,12 +19,12 @@ export class Message<T> implements IMessage<T> {
   payload?: T;
 
   constructor(
-    senderId: string,
+    sender: RoomUsers,
     type: MessageType,
     to: IMessage<T>["to"],
     payload?: T
   ) {
-    this.from = senderId;
+    this.from = sender;
     this.to = to;
     this.sendDate = new Date();
     this.id = nanoid();

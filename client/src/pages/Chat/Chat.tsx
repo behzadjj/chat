@@ -10,6 +10,7 @@ import {
   IMessages,
   IUserListMessage,
   MessageType,
+  RoomUsers,
 } from "@chat/models";
 import { Message } from "@chat/implement";
 
@@ -18,10 +19,10 @@ let socketChannel: any = undefined;
 type Room = {
   roomName: string;
   roomId: string;
-  userId: string;
+  user: RoomUsers;
   roomLink?: string;
   isCreator: boolean;
-  users: Array<{ name: string; userId: string }>;
+  users: Array<RoomUsers>;
 };
 
 export const Chat: FC<any> = (props) => {
@@ -36,6 +37,22 @@ export const Chat: FC<any> = (props) => {
     }
   }, [props.match.params]);
 
+  const cl = (stringMessage: string) => {
+    const message = Message.deserialize(stringMessage) as IMessages;
+
+    if (message.type === MessageType.CHAT_MESSAGE) {
+      setChatMessages((prevState) => [...prevState, message as IChatMessage]);
+    }
+
+    if (message.type === MessageType.USERS_LIST) {
+      const usersMessage = message as IUserListMessage;
+      setRoom((prevState) => ({
+        ...prevState,
+        users: usersMessage.payload.users,
+      }));
+    }
+  };
+
   const initializeSocket = () => {
     const socket = io("http://localhost:5500");
     socket.on("connect", () => {
@@ -45,24 +62,7 @@ export const Chat: FC<any> = (props) => {
       setTimeout(() => socket.connect(), 5500);
     });
 
-    socketChannel = socket.on("chat-room", (stringMessage: string) => {
-      const message = Message.deserialize(stringMessage) as IMessages;
-
-      console.log(stringMessage);
-
-      if (message.type === MessageType.CHAT_MESSAGE) {
-        const chatMessage = message as IChatMessage;
-        setChatMessages((prevState) => [...prevState, chatMessage]);
-      }
-
-      if (message.type === MessageType.USERS_LIST) {
-        const usersMessage = message as IUserListMessage;
-        setRoom((prevState) => ({
-          ...prevState,
-          users: usersMessage.payload.users,
-        }));
-      }
-    });
+    socketChannel = socket.on("chat-room", cl);
     socket.on("disconnect", () => {
       console.log("disconnected");
     });
@@ -84,7 +84,10 @@ export const Chat: FC<any> = (props) => {
         setRoom({
           roomName,
           roomId: res.data.roomId,
-          userId: res.data.userId,
+          user: {
+            userId: res.data.userId,
+            name: username,
+          },
           roomLink,
           isCreator: true,
           users: res.data.members,
@@ -111,7 +114,10 @@ export const Chat: FC<any> = (props) => {
         setRoom({
           roomName: res.data.roomName,
           roomId: res.data.roomId,
-          userId: res.data.userId,
+          user: {
+            userId: res.data.userId,
+            name: username,
+          },
           isCreator: false,
           roomLink,
           users: res.data.members,
@@ -123,7 +129,7 @@ export const Chat: FC<any> = (props) => {
   const handleMessageSent = (text: string) => {
     if (socketChannel) {
       const message = new Message<IChatMessagePayload>(
-        room.userId,
+        room.user,
         MessageType.CHAT_MESSAGE,
         "all",
         {

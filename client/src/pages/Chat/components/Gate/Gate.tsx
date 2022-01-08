@@ -64,91 +64,85 @@ export const Gate: FC<Props> = ({
 
   return (
     <>
-      <div className='gate'>
-        {gateMode === GateModes.CREATE && (
-          <Formik
-            initialValues={{ username: "", roomName: "" }}
-            validationSchema={createSchema}
-            onSubmit={handleCreatSubmitted}
-          >
-            {({ values, handleSubmit, isSubmitting }) => (
-              <form onSubmit={handleSubmit}>
-                <div className='username-form'>
-                  <header>
-                    <h1>Create</h1>
-                  </header>
+      <section className='gate'>
+        <h1>Create</h1>
 
-                  <main>
-                    <TextField
-                      label='Username'
-                      type='text'
-                      id='username'
-                      name='username'
-                      value={values.username}
-                    />
+        <main>
+          {gateMode === GateModes.CREATE && (
+            <Formik
+              initialValues={{ username: "", roomName: "" }}
+              validationSchema={createSchema}
+              onSubmit={handleCreatSubmitted}
+            >
+              {({ values, handleSubmit, isSubmitting }) => (
+                <form onSubmit={handleSubmit}>
+                  <TextField
+                    label='Username'
+                    type='text'
+                    id='username'
+                    name='username'
+                    value={values.username}
+                  />
 
-                    <TextField
-                      label='Room Name'
-                      type='text'
-                      id='roomName'
-                      name='roomName'
-                      value={values.roomName}
-                    />
-                  </main>
+                  <TextField
+                    label='Room Name'
+                    type='text'
+                    id='roomName'
+                    name='roomName'
+                    value={values.roomName}
+                  />
 
-                  <footer>
-                    <button type='submit' disabled={isSubmitting}>
-                      Create
-                    </button>
-                  </footer>
-                </div>
-              </form>
-            )}
-          </Formik>
-        )}
-        {gateMode === GateModes.JOIN && (
-          <Formik
-            initialValues={{ username: "", roomId }}
-            validationSchema={joinSchema}
-            onSubmit={handleJoinSubmitted}
-          >
-            {({ values, handleSubmit, isSubmitting }) => (
-              <form onSubmit={handleSubmit}>
-                <div className='username-form'>
-                  <header>
-                    <h1>Join</h1>
-                  </header>
+                  <button type='submit' disabled={isSubmitting}>
+                    Create
+                  </button>
+                </form>
+              )}
+            </Formik>
+          )}
+          {gateMode === GateModes.JOIN && (
+            <Formik
+              initialValues={{ username: "", roomId }}
+              validationSchema={joinSchema}
+              onSubmit={handleJoinSubmitted}
+            >
+              {({ values, handleSubmit, isSubmitting }) => (
+                <form onSubmit={handleSubmit}>
+                  <div className='username-form'>
+                    <header>
+                      <h1>Join</h1>
+                    </header>
 
-                  <main>
-                    <TextField
-                      label='Room Name'
-                      type='text'
-                      id='username'
-                      name='username'
-                      value={values.username}
-                    />
+                    <main>
+                      <TextField
+                        label='Room Name'
+                        type='text'
+                        id='username'
+                        name='username'
+                        value={values.username}
+                      />
 
-                    <TextField
-                      label='Room Id'
-                      type='text'
-                      id='roomId'
-                      name='roomId'
-                      disabled={roomId !== undefined}
-                      value={values.roomId}
-                    />
-                  </main>
+                      <TextField
+                        label='Room Id'
+                        type='text'
+                        id='roomId'
+                        name='roomId'
+                        disabled={roomId !== undefined}
+                        value={values.roomId}
+                      />
+                    </main>
 
-                  <footer>
-                    <button type='submit' disabled={isSubmitting}>
-                      Join
-                    </button>
-                  </footer>
-                </div>
-              </form>
-            )}
-          </Formik>
-        )}
-      </div>
+                    <footer>
+                      <button type='submit' disabled={isSubmitting}>
+                        Join
+                      </button>
+                    </footer>
+                  </div>
+                </form>
+              )}
+            </Formik>
+          )}
+        </main>
+      </section>
     </>
   );
 };

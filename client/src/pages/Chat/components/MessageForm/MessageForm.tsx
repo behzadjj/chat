@@ -33,38 +33,35 @@ export const MessageForm: FC<Props> = ({ onMessage }) => {
 
   return (
     <>
-      <div className='message-form'>
-        <Formik
-          initialValues={{ message: "" }}
-          validationSchema={MessageSchema}
-          onSubmit={handleSendSubmitted}
-        >
-          {({ values, handleSubmit, isSubmitting }) => (
-            <form onSubmit={handleSubmit}>
-              <div className='chat-form'>
-                <header>
-                  <h1>Message</h1>
-                </header>
-                <main>
-                  <TextField
-                    label='Message'
-                    type='text'
-                    id='message'
-                    name='message'
-                    value={values.message}
-                  />
-                </main>
+      <section className='message-form'>
+        <h5>Message form</h5>
+
+        <main>
+          <Formik
+            initialValues={{ message: "" }}
+            validationSchema={MessageSchema}
+            onSubmit={handleSendSubmitted}
+          >
+            {({ values, handleSubmit, isSubmitting }) => (
+              <form onSubmit={handleSubmit}>
+                <TextField
+                  label='Message'
+                  type='text'
+                  id='message'
+                  name='message'
+                  value={values.message}
+                />
 
                 <footer>
                   <button type='submit' disabled={isSubmitting}>
                     Submit
                   </button>
                 </footer>
-              </div>
-            </form>
-          )}
-        </Formik>
-      </div>
+              </form>
+            )}
+          </Formik>
+        </main>
+      </section>
     </>
   );
 };

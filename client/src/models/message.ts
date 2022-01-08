@@ -1,3 +1,5 @@
+import { RoomUsers } from "./room-user";
+
 export enum MessageType {
   CHAT_MESSAGE,
   USERS_LIST,
@@ -5,8 +7,8 @@ export enum MessageType {
 
 export interface IMessage<T> {
   id?: string;
-  from?: string;
-  to?: string[] | "all";
+  from?: RoomUsers;
+  to?: RoomUsers[] | "all";
 
   // Date of sending message
   sendDate?: Date | string;
