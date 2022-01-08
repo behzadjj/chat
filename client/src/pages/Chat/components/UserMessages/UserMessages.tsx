@@ -1,16 +1,8 @@
+import { IChatMessage } from "@chat/models";
 import { FC } from "react";
 
-export type ChatMessage = {
-  roomId: string;
-  sendingDate: Date;
-  text: string;
-  userId?: string;
-  userName?: string;
-  messageId?: string;
-};
-
 type Props = {
-  messages: Array<ChatMessage>;
+  messages: Array<IChatMessage>;
 };
 
 export const UserMessages: FC<Props> = ({ messages }) => {
@@ -20,10 +12,10 @@ export const UserMessages: FC<Props> = ({ messages }) => {
       <div className='user-messages'>
         {messages &&
           messages.map((message) => (
-            <div key={message.messageId}>
-              <span>{message.userName}:&nbsp;</span>
-              <span>{message.text}&nbsp; ****** &nbsp;</span>
-              <span>{message.sendingDate}</span>
+            <div key={message.id}>
+              <span>{message.from}:&nbsp;</span>
+              <span>{message.payload.text}&nbsp; ****** &nbsp;</span>
+              <span>{message.sendDate}</span>
             </div>
           ))}
       </div>

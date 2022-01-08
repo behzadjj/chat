@@ -20,7 +20,7 @@ chatroomRoutes.route("/chatroom/create").post(function (req, res) {
   const rooms = appStorage.get("rooms");
   const userId = nanoid();
   const roomId = nanoid();
-  rooms.push({
+  const room = {
     roomId,
     roomName: req.body.roomName,
     creator: userId,
@@ -31,10 +31,11 @@ chatroomRoutes.route("/chatroom/create").post(function (req, res) {
         userId,
       },
     ],
-  });
-  appStorage.set(rooms);
+  };
+  rooms.push(room);
+  appStorage.set("rooms", rooms);
 
-  res.json({ userId, roomId });
+  res.json({ userId, roomId, members: room.members });
 });
 
 chatroomRoutes.route("/chatroom/join").post(function (req, res) {
@@ -55,7 +56,12 @@ chatroomRoutes.route("/chatroom/join").post(function (req, res) {
   });
   appStorage.set(rooms);
 
-  res.json({ userId, roomId: req.body.roomId, roomName: room.roomName });
+  res.json({
+    userId,
+    roomId: req.body.roomId,
+    roomName: room.roomName,
+    members: room.members,
+  });
 });
 
 module.exports = chatroomRoutes;

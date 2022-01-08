@@ -3,7 +3,15 @@ import { io } from "socket.io-client";
 import axios from "axios";
 
 import { Gate, UsersList, MessageForm, GateModes } from "./components";
-import { ChatMessage, UserMessages } from "./components/UserMessages";
+import { UserMessages } from "./components/UserMessages";
+import {
+  IChatMessage,
+  IChatMessagePayload,
+  IMessages,
+  IUserListMessage,
+  MessageType,
+} from "@chat/models";
+import { Message } from "@chat/implement";
 
 let socketChannel: any = undefined;
 
@@ -13,13 +21,14 @@ type Room = {
   userId: string;
   roomLink?: string;
   isCreator: boolean;
+  users: Array<{ name: string; userId: string }>;
 };
 
 export const Chat: FC<any> = (props) => {
   const [joined, setJoined] = useState(false);
   const [gateMode, setGateMode] = useState<GateModes>();
   const [room, setRoom] = useState<Room>();
-  const [chatMessages, setChatMessages] = useState([]);
+  const [chatMessages, setChatMessages] = useState<Array<IChatMessage>>([]);
 
   useEffect(() => {
     if (props.match.params && props.match.params.roomId) {
@@ -37,8 +46,22 @@ export const Chat: FC<any> = (props) => {
     });
 
     socketChannel = socket.on("chat-room", (stringMessage: string) => {
-      const message = JSON.parse(stringMessage) as ChatMessage;
-      setChatMessages((prevState) => [...prevState, message]);
+      const message = Message.deserialize(stringMessage) as IMessages;
+
+      console.log(stringMessage);
+
+      if (message.type === MessageType.CHAT_MESSAGE) {
+        const chatMessage = message as IChatMessage;
+        setChatMessages((prevState) => [...prevState, chatMessage]);
+      }
+
+      if (message.type === MessageType.USERS_LIST) {
+        const usersMessage = message as IUserListMessage;
+        setRoom((prevState) => ({
+          ...prevState,
+          users: usersMessage.payload.users,
+        }));
+      }
     });
     socket.on("disconnect", () => {
       console.log("disconnected");
@@ -56,17 +79,16 @@ export const Chat: FC<any> = (props) => {
           document.location.protocol +
           "//" +
           document.location.host +
-          "/chat/" +
+          "/" +
           res.data.roomId;
-        console.log(roomLink);
         setRoom({
           roomName,
           roomId: res.data.roomId,
           userId: res.data.userId,
           roomLink,
           isCreator: true,
+          users: res.data.members,
         });
-
         navigator.clipboard.writeText(roomLink);
         initializeSocket();
       });
@@ -79,11 +101,20 @@ export const Chat: FC<any> = (props) => {
         roomId,
       })
       .then((res) => {
+        const roomLink =
+          document.location.protocol +
+          "//" +
+          document.location.host +
+          "/" +
+          res.data.roomId;
+
         setRoom({
           roomName: res.data.roomName,
           roomId: res.data.roomId,
           userId: res.data.userId,
           isCreator: false,
+          roomLink,
+          users: res.data.members,
         });
         initializeSocket();
       });
@@ -91,14 +122,18 @@ export const Chat: FC<any> = (props) => {
 
   const handleMessageSent = (text: string) => {
     if (socketChannel) {
-      const message: ChatMessage = {
-        roomId: room.roomId,
-        text,
-        userId: room.userId,
-        sendingDate: new Date(),
-      };
+      const message = new Message<IChatMessagePayload>(
+        room.userId,
+        MessageType.CHAT_MESSAGE,
+        "all",
+        {
+          text,
+          chatMessageType: "TEXT",
+          roomId: room.roomId,
+        }
+      );
 
-      socketChannel.emit("chat-room", JSON.stringify(message));
+      socketChannel.emit("chat-room", Message.serialize(message));
     }
   };
 
@@ -138,13 +173,13 @@ export const Chat: FC<any> = (props) => {
         <section>
           <h1>room name: {room.roomName}</h1>
 
-          {room.isCreator && (
+          {room && (
             <h3>
               Room link: <a href={room.roomLink}>Room</a>
             </h3>
           )}
 
-          <UsersList></UsersList>
+          <UsersList list={room.users}></UsersList>
 
           <UserMessages messages={chatMessages}></UserMessages>
 

@@ -24,37 +24,22 @@ io.on("connection", (socket) => {
 
   socket.on("chat-room", (data) => {
     const message = JSON.parse(data);
-    const messageId = nanoid();
+    // const messageId = nanoid();
 
     const room = appStorage
       .get("rooms")
-      .find((x) => x.roomId === message.roomId);
+      .find((x) => x.roomId === message.payload.roomId);
 
+    console.log(message);
     if (!room) {
       return;
     }
-
-    const member = room.members.find((x) => x.userId === message.userId);
-
-    if (!member) {
-      return;
-    }
-
-    const forwardMessage = {
-      roomId: message.roomId,
-      sendingDate: message.sendingDate,
-      text: message.text,
-      userName: member.name,
-      messageId,
-    };
-
     let db_connect = dbo.getDb();
-    message.messageId = messageId;
+    // message.messageId = messageId;
 
     db_connect.collection("chat").insertOne(message, function (err) {
       if (err) throw err;
-
-      io.to("chat-room").emit("chat-room", JSON.stringify(forwardMessage));
+      io.to("chat-room").emit("chat-room", JSON.stringify(message));
     });
   });
 
