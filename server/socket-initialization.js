@@ -17,6 +17,8 @@ const io = socketIo(server, {
     origin: "http://localhost:3000",
   },
 }); //in case server and client run on different urls
+
+appStorage.set("io", io);
 io.on("connection", (socket) => {
   console.log("client connected: ", socket.id);
 

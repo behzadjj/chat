@@ -55,6 +55,7 @@ chatroomRoutes.route("/chatroom/join").post(function (req, res) {
     userId,
   });
   appStorage.set(rooms);
+  broadCastMemberList(room.members);
 
   res.json({
     userId,
@@ -63,5 +64,20 @@ chatroomRoutes.route("/chatroom/join").post(function (req, res) {
     members: room.members,
   });
 });
+
+const broadCastMemberList = (list) => {
+  const io = appStorage.get("io");
+
+  const message = {
+    id: nanoid(),
+    payload: {
+      users: list,
+    },
+    to: "all",
+    sendDate: new Date(),
+    type: 1,
+  };
+  io.to("chat-room").emit("chat-room", JSON.stringify(message));
+};
 
 module.exports = chatroomRoutes;

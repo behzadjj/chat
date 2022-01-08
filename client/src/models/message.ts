@@ -1,8 +1,8 @@
 import { RoomUsers } from "./room-user";
 
 export enum MessageType {
-  CHAT_MESSAGE,
-  USERS_LIST,
+  CHAT_MESSAGE = 0,
+  USERS_LIST = 1,
 }
 
 export interface IMessage<T> {
@@ -48,7 +48,7 @@ export interface IChatMessagePayload {
  * Internal chat message model
  */
 export interface IUserListMessagePayload {
-  users: [];
+  users: Array<RoomUsers>;
 }
 
 export type IChatMessage = IMessage<IChatMessagePayload>;
