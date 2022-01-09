@@ -16,6 +16,17 @@ const appStorage = require("../app-storage");
 
 appStorage.set("rooms", []);
 
+const findRoomById = (roomId) => {
+  const rooms = appStorage.get("rooms");
+  const room = rooms.find((x) => x.roomId === roomId);
+
+  if (!room) {
+    throw new Error("BROKEN"); // Express will catch this on its own.
+  }
+
+  return room;
+};
+
 chatroomRoutes.route("/chatroom/create").post(function (req, res) {
   const rooms = appStorage.get("rooms");
   const userId = nanoid();
@@ -38,14 +49,16 @@ chatroomRoutes.route("/chatroom/create").post(function (req, res) {
   res.json({ userId, roomId, members: room.members });
 });
 
+chatroomRoutes.route("/chatroom/leave").post(function (req, res) {
+  const room = findRoomById(req.body.roomId);
+  const userIndex = room.members.findIndex((x) => x.userId === req.body.userId);
+  room.members.slice(userIndex, 1);
+  broadCastMemberList(room.members);
+  res.json();
+});
+
 chatroomRoutes.route("/chatroom/join").post(function (req, res) {
-  const rooms = appStorage.get("rooms");
-
-  const room = rooms.find((x) => x.roomId === req.body.roomId);
-
-  if (!room) {
-    throw new Error("BROKEN"); // Express will catch this on its own.
-  }
+  const room = findRoomById(req.body.roomId);
 
   const userId = nanoid();
 
