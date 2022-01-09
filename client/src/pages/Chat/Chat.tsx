@@ -1,6 +1,7 @@
 import { FC, useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 import { Gate, UsersList, MessageForm } from "./components";
 import { UserMessages } from "./components/UserMessages";
@@ -28,9 +29,10 @@ type Room = {
   users: Array<RoomUsers>;
 };
 
-export const Chat: FC<any> = (props) => {
+export const Chat: FC = () => {
   const [joined, setJoined] = useState(false);
   const [room, setRoom] = useState<Room>();
+  const navigate = useNavigate();
   const [chatMessages, setChatMessages] = useState<Array<IChatMessage>>([]);
 
   const messageBox = useRef<HTMLDivElement>();
@@ -147,6 +149,18 @@ export const Chat: FC<any> = (props) => {
     }
   };
 
+  const handleLeaveClicked = () => {
+    axios
+      .post("http://localhost:5000/chatroom/leave", {
+        userId: room.user.userId,
+        roomId: room.roomId,
+      })
+      .then(() => {
+        navigate("/");
+        setJoined(false);
+      });
+  };
+
   return (
     <>
       <div className='chat'>
@@ -156,7 +170,6 @@ export const Chat: FC<any> = (props) => {
               <Gate
                 onCreate={handleRoomCreated}
                 onJoin={handleUserJoined}
-                roomId={props.match.params.roomId}
               ></Gate>
             </section>
           )}
@@ -169,9 +182,21 @@ export const Chat: FC<any> = (props) => {
                 <h1>Room Name: {room.roomName}</h1>
 
                 {room && (
-                  <h3>
-                    Room link: <a href={room.roomLink}>Room</a>
-                  </h3>
+                  <>
+                    <div className='room__header--actions'>
+                      <h3>
+                        Room link: <a href={room.roomLink}>Room</a>
+                      </h3>
+
+                      <button
+                        className='chat-button'
+                        type='submit'
+                        onClick={handleLeaveClicked}
+                      >
+                        Leave
+                      </button>
+                    </div>
+                  </>
                 )}
               </header>
 

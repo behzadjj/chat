@@ -2,6 +2,7 @@ import { FC, useEffect, useState } from "react";
 import { Formik, FormikHelpers } from "formik";
 import * as Yup from "yup";
 import { TextField } from "@chat/components/TextField/TextField";
+import { useParams } from "react-router-dom";
 
 import "./gate.scss";
 
@@ -38,11 +39,11 @@ const joinSchema = Yup.object().shape({
 type Props = {
   onCreate?: (username: string, roomName: string) => void;
   onJoin?: (username: string, roomId: string) => void;
-  roomId?: string;
 };
 
-export const Gate: FC<Props> = ({ onCreate, onJoin, roomId }) => {
+export const Gate: FC<Props> = ({ onCreate, onJoin }) => {
   const [gateMode, setGateMode] = useState<GateModes>();
+  const { roomId } = useParams();
 
   useEffect(() => {
     if (roomId) {
