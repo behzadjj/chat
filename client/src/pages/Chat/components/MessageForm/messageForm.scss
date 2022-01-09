@@ -1,0 +1,11 @@
+.message {
+    .message-form {
+        display: flex;
+        align-items: center;
+
+        &__main {
+            flex: 1;
+            font-size: 1.1rem;
+        }
+    }
+}

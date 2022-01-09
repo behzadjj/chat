@@ -1,6 +1,9 @@
 import { FC } from "react";
+import { format } from "date-fns";
 
 import { IChatMessage } from "@chat/models";
+
+import "./userMessages.scss";
 
 export type ChatMessage = IChatMessage & { fromName: string };
 
@@ -12,15 +15,17 @@ export const UserMessages: FC<Props> = ({ messages }) => {
   return (
     <>
       <section className='user-messages'>
-        <h5>Messages</h5>
+        <h5 className='user-messages__header'>Messages</h5>
 
-        <main>
+        <main className='user-messages__main'>
           {messages &&
             messages.map((message) => (
-              <div key={message.id}>
+              <div className='user-message' key={message.id}>
+                <span>
+                  ({format(new Date(message.sendDate), "H:mm:ss")})&nbsp;
+                </span>
                 <span>{message.from.name}:&nbsp;</span>
-                <span>{message.payload.text}&nbsp; ****** &nbsp;</span>
-                <span>{message.sendDate}</span>
+                <span>{message.payload.text}</span>
               </div>
             ))}
         </main>

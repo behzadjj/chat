@@ -10,15 +10,29 @@
 
     &__room-container {
         .room {
+            &__header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
             &__main {
                 display: flex;
                 justify-content: space-around;
+                margin: 2rem auto 4rem;
+                height: 30rem;
 
                 &--user-list {
+                    padding: 1rem;
+                    overflow: auto;
+                    min-width: 12rem;
                 }
 
                 &--chat-messages {
                     flex: 1;
+                    padding: 1rem;
+                    border: 1px solid gray;
+                    overflow: auto;
+                    background-color: #495057;
                 }
             }
         }

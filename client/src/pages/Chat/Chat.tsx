@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
 import axios from "axios";
 
@@ -32,6 +32,14 @@ export const Chat: FC<any> = (props) => {
   const [joined, setJoined] = useState(false);
   const [room, setRoom] = useState<Room>();
   const [chatMessages, setChatMessages] = useState<Array<IChatMessage>>([]);
+
+  const messageBox = useRef<HTMLDivElement>();
+
+  useEffect(() => {
+    if (messageBox && messageBox.current) {
+      messageBox.current.scrollTo(0, messageBox.current.scrollHeight);
+    }
+  }, [chatMessages]);
 
   const cl = (stringMessage: string) => {
     const message = Message.deserialize(stringMessage) as IMessages;
@@ -158,7 +166,7 @@ export const Chat: FC<any> = (props) => {
           {joined && (
             <section className='room'>
               <header className='room__header'>
-                <h1>room name: {room.roomName}</h1>
+                <h1>Room Name: {room.roomName}</h1>
 
                 {room && (
                   <h3>
@@ -172,7 +180,7 @@ export const Chat: FC<any> = (props) => {
                   <UsersList list={room.users}></UsersList>
                 </div>
 
-                <div className='room__main--chat-messages'>
+                <div ref={messageBox} className='room__main--chat-messages'>
                   <UserMessages messages={chatMessages}></UserMessages>
                 </div>
               </main>

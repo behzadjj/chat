@@ -1,17 +1,17 @@
 import { FC } from "react";
 import { Formik, FormikHelpers } from "formik";
 import * as Yup from "yup";
-import { TextField } from "@chat/components/TextField";
+
+import { TextField } from "@chat/components/TextField/TextField";
+
+import "./messageForm.scss";
 
 type FormValues = {
   message: string;
 };
 
 const MessageSchema = Yup.object().shape({
-  message: Yup.string()
-    .min(2, "short-input")
-    .max(50, "long-input")
-    .required("required-input"),
+  message: Yup.string().min(0, "short-input").max(50, "long-input"),
 });
 
 type Props = {
@@ -33,34 +33,39 @@ export const MessageForm: FC<Props> = ({ onMessage }) => {
 
   return (
     <>
-      <section className='message-form'>
-        <h5>Message form</h5>
+      <section className='message'>
+        {/* <h5>Message form</h5> */}
 
-        <main>
-          <Formik
-            initialValues={{ message: "" }}
-            validationSchema={MessageSchema}
-            onSubmit={handleSendSubmitted}
-          >
-            {({ values, handleSubmit, isSubmitting }) => (
-              <form onSubmit={handleSubmit}>
-                <TextField
-                  label='Message'
-                  type='text'
-                  id='message'
-                  name='message'
-                  value={values.message}
-                />
-
-                <footer>
-                  <button type='submit' disabled={isSubmitting}>
-                    Submit
+        <Formik
+          initialValues={{ message: "" }}
+          validationSchema={MessageSchema}
+          onSubmit={handleSendSubmitted}
+        >
+          {({ values, handleSubmit, isSubmitting }) => (
+            <form onSubmit={handleSubmit}>
+              <div className='message-form'>
+                <div className='message-form__main'>
+                  <TextField
+                    label='Message'
+                    type='text'
+                    id='message'
+                    name='message'
+                    value={values.message}
+                  />
+                </div>
+                <footer className='message-form__footer'>
+                  <button
+                    className='chat-button'
+                    type='submit'
+                    disabled={isSubmitting}
+                  >
+                    Send
                   </button>
                 </footer>
-              </form>
-            )}
-          </Formik>
-        </main>
+              </div>
+            </form>
+          )}
+        </Formik>
       </section>
     </>
   );
