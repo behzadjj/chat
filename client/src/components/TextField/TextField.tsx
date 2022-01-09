@@ -1,6 +1,8 @@
 import { useField } from "formik";
 import { FC } from "react";
 
+import "./textField.scss";
+
 type InputProps = {
   label: string;
   name: string;

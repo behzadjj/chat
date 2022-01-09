@@ -43,8 +43,9 @@
     ]
   },
   "devDependencies": {
-    "@types/react": "^17.0.38",
     "@craco/craco": "^6.3.0",
-    "craco-alias": "^3.0.1"
+    "@types/react": "^17.0.38",
+    "craco-alias": "^3.0.1",
+    "sass": "^1.41.1"
   }
 }

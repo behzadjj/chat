@@ -5,6 +5,7 @@ import { Switch, Route, BrowserRouter, Redirect } from "react-router-dom";
 import { Chat } from "./pages";
 // We import bootstrap to make our application look better.
 import "bootstrap/dist/css/bootstrap.css";
+import "./style.scss";
 
 ReactDOM.render(
   <React.StrictMode>

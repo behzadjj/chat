@@ -1,9 +1,10 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useState } from "react";
 import { io } from "socket.io-client";
 import axios from "axios";
 
-import { Gate, UsersList, MessageForm, GateModes } from "./components";
+import { Gate, UsersList, MessageForm } from "./components";
 import { UserMessages } from "./components/UserMessages";
+
 import {
   IChatMessage,
   IChatMessagePayload,
@@ -13,6 +14,8 @@ import {
   RoomUsers,
 } from "@chat/models";
 import { Message } from "@chat/implement";
+
+import "./chat.scss";
 
 let socketChannel: any = undefined;
 
@@ -27,15 +30,8 @@ type Room = {
 
 export const Chat: FC<any> = (props) => {
   const [joined, setJoined] = useState(false);
-  const [gateMode, setGateMode] = useState<GateModes>();
   const [room, setRoom] = useState<Room>();
   const [chatMessages, setChatMessages] = useState<Array<IChatMessage>>([]);
-
-  useEffect(() => {
-    if (props.match.params && props.match.params.roomId) {
-      setGateMode(GateModes.JOIN);
-    }
-  }, [props.match.params]);
 
   const cl = (stringMessage: string) => {
     const message = Message.deserialize(stringMessage) as IMessages;
@@ -143,55 +139,51 @@ export const Chat: FC<any> = (props) => {
     }
   };
 
-  const handleJoinModeClicked = () => setGateMode(GateModes.JOIN);
-
-  const handleCreateModeClicked = () => setGateMode(GateModes.CREATE);
-
   return (
     <>
-      {gateMode === undefined && (
-        <>
-          <button onClick={handleJoinModeClicked}>Join Room</button>
-
-          <button onClick={handleCreateModeClicked}>Create Room</button>
-        </>
-      )}
-
-      {!joined && gateMode !== undefined && (
-        <section>
-          <Gate
-            gateMode={gateMode}
-            onCreate={handleRoomCreated}
-            onJoin={handleUserJoined}
-            roomId={props.match.params.roomId}
-          ></Gate>
-          <button
-            onClick={() => {
-              setGateMode(undefined);
-            }}
-          >
-            Back
-          </button>
-        </section>
-      )}
-
-      {joined && (
-        <section>
-          <h1>room name: {room.roomName}</h1>
-
-          {room && (
-            <h3>
-              Room link: <a href={room.roomLink}>Room</a>
-            </h3>
+      <div className='chat'>
+        <div className='chat__gate-container'>
+          {!joined && (
+            <section>
+              <Gate
+                onCreate={handleRoomCreated}
+                onJoin={handleUserJoined}
+                roomId={props.match.params.roomId}
+              ></Gate>
+            </section>
           )}
+        </div>
 
-          <UsersList list={room.users}></UsersList>
+        <div className='chat__room-container'>
+          {joined && (
+            <section className='room'>
+              <header className='room__header'>
+                <h1>room name: {room.roomName}</h1>
 
-          <UserMessages messages={chatMessages}></UserMessages>
+                {room && (
+                  <h3>
+                    Room link: <a href={room.roomLink}>Room</a>
+                  </h3>
+                )}
+              </header>
 
-          <MessageForm onMessage={handleMessageSent}></MessageForm>
-        </section>
-      )}
+              <main className='room__main'>
+                <div className='room__main--user-list'>
+                  <UsersList list={room.users}></UsersList>
+                </div>
+
+                <div className='room__main--chat-messages'>
+                  <UserMessages messages={chatMessages}></UserMessages>
+                </div>
+              </main>
+
+              <footer className='room__footer'>
+                <MessageForm onMessage={handleMessageSent}></MessageForm>
+              </footer>
+            </section>
+          )}
+        </div>
+      </div>
     </>
   );
 };

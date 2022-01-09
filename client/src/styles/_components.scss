@@ -1,0 +1,45 @@
+.chat-button {
+  border: 1px;
+  background-color: #17a2b8;
+  margin: 0 1rem;
+  padding: 0.5rem 2rem;
+  color: #f8f9fa;
+  transition: all 0.2s;
+
+  &:hover,
+  &:active {
+    text-decoration: none;
+    background-color: #f8f9fa;
+    color: #17a2b8;
+  }
+}
+
+.route-anchor {
+  padding: 3rem 5rem;
+  font-size: 2rem;
+  color: #17a2b8;
+  border: 1px solid #17a2b8;
+  border-radius: 2px;
+  transition: all 0.2s;
+
+  &:hover,
+  &:active {
+    text-decoration: none;
+    color: #f8f9fa;
+  }
+}
+
+.chat-form {
+  &__header {
+  }
+
+  &__main {
+    margin: 2rem auto;
+  }
+
+  &__footer {
+    display: flex;
+    text-align: right;
+    direction: rtl;
+  }
+}

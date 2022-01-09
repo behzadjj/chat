@@ -1,0 +1,31 @@
+.group-input {
+    display: flex;
+    flex-direction: column;
+    margin: 0 auto 0.75rem;
+
+    label {
+        color: #f8f9fa;
+        font-size: 1.3rem;
+        line-height: 2rem;
+        margin-bottom: 0.5rem;
+    }
+
+    input {
+        border: 1px solid gray;
+        border-radius: 2px;
+        background-color: unset;
+        height: 4.5rem;
+        padding: 0 1rem;
+        direction: ltr;
+        color: #f8f9fa;
+    }
+
+    .input-error {
+        margin: 0.5rem 0 0;
+        padding: 0 0.5rem;
+        font-size: 1.2rem;
+        line-height: 1.6rem;
+        color: orange;
+        min-height: 1.6rem;
+    }
+}

@@ -1,0 +1,26 @@
+.chat {
+    padding: 4rem;
+    max-width: 60rem;
+    margin: auto;
+    margin-top: 10rem;
+    border: 1px solid gray;
+
+    &__gate-container {
+    }
+
+    &__room-container {
+        .room {
+            &__main {
+                display: flex;
+                justify-content: space-around;
+
+                &--user-list {
+                }
+
+                &--chat-messages {
+                    flex: 1;
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,29 @@
+.gate {
+    &__header {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    &__main {
+        padding: 2rem;
+
+        &--routes-container {
+            &__header {
+            }
+
+            &__main {
+                display: flex;
+                align-items: center;
+                justify-content: space-around;
+                margin-top: 3rem;
+            }
+        }
+
+        &--form-container {
+        }
+    }
+
+    &__footer {
+        text-align: right;
+    }
+}

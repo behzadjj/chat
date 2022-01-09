@@ -1,7 +1,9 @@
-import { FC } from "react";
+import { FC, useEffect, useState } from "react";
 import { Formik, FormikHelpers } from "formik";
 import * as Yup from "yup";
-import { TextField } from "@chat/components/TextField";
+import { TextField } from "@chat/components/TextField/TextField";
+
+import "./gate.scss";
 
 type CreateFormValues = {
   username: string;
@@ -36,16 +38,18 @@ const joinSchema = Yup.object().shape({
 type Props = {
   onCreate?: (username: string, roomName: string) => void;
   onJoin?: (username: string, roomId: string) => void;
-  gateMode: GateModes;
   roomId?: string;
 };
 
-export const Gate: FC<Props> = ({
-  onCreate,
-  gateMode = GateModes.CREATE,
-  onJoin,
-  roomId,
-}) => {
+export const Gate: FC<Props> = ({ onCreate, onJoin, roomId }) => {
+  const [gateMode, setGateMode] = useState<GateModes>();
+
+  useEffect(() => {
+    if (roomId) {
+      setGateMode(GateModes.JOIN);
+    }
+  }, [roomId]);
+
   const handleCreatSubmitted = (
     values: CreateFormValues,
     { setSubmitting }: FormikHelpers<CreateFormValues>
@@ -62,84 +66,144 @@ export const Gate: FC<Props> = ({
     setSubmitting(false);
   };
 
+  const handleJoinModeClicked = () => setGateMode(GateModes.JOIN);
+
+  const handleCreateModeClicked = () => setGateMode(GateModes.CREATE);
+
   return (
     <>
       <section className='gate'>
-        <h1>Create</h1>
+        <header className='gate__header'>
+          <h1>Chat Room Gate</h1>
 
-        <main>
-          {gateMode === GateModes.CREATE && (
-            <Formik
-              initialValues={{ username: "", roomName: "" }}
-              validationSchema={createSchema}
-              onSubmit={handleCreatSubmitted}
+          {gateMode !== undefined && (
+            <button
+              className='chat-button'
+              onClick={() => {
+                setGateMode(undefined);
+              }}
             >
-              {({ values, handleSubmit, isSubmitting }) => (
-                <form onSubmit={handleSubmit}>
-                  <TextField
-                    label='Username'
-                    type='text'
-                    id='username'
-                    name='username'
-                    value={values.username}
-                  />
+              Back
+            </button>
+          )}
+        </header>
 
-                  <TextField
-                    label='Room Name'
-                    type='text'
-                    id='roomName'
-                    name='roomName'
-                    value={values.roomName}
-                  />
+        <main className='gate__main'>
+          {gateMode === undefined && (
+            <>
+              <div className='gate__main--routes-container'>
+                <h3 className='gate__main--routes-container__header'>
+                  Chat with anyone anywhere in the world
+                </h3>
+                <main className='gate__main--routes-container__main'>
+                  <a
+                    href='/#'
+                    className='route-anchor'
+                    onClick={handleJoinModeClicked}
+                  >
+                    Join Room
+                  </a>
 
-                  <button type='submit' disabled={isSubmitting}>
-                    Create
-                  </button>
-                </form>
-              )}
-            </Formik>
+                  <a
+                    href='/#'
+                    className='route-anchor'
+                    onClick={handleCreateModeClicked}
+                  >
+                    Create Room
+                  </a>
+                </main>
+              </div>
+            </>
+          )}
+          {gateMode === GateModes.CREATE && (
+            <div className='gate__main--form-container'>
+              <Formik
+                initialValues={{ username: "", roomName: "" }}
+                validationSchema={createSchema}
+                onSubmit={handleCreatSubmitted}
+              >
+                {({ values, handleSubmit, isSubmitting }) => (
+                  <form onSubmit={handleSubmit}>
+                    <article className='chat-form'>
+                      <h3 className='chat-form__header'>Create</h3>
+                      <main className='chat-form__main'>
+                        <TextField
+                          label='Username'
+                          type='text'
+                          id='username'
+                          name='username'
+                          value={values.username}
+                        />
+
+                        <TextField
+                          label='Room Name'
+                          type='text'
+                          id='roomName'
+                          name='roomName'
+                          value={values.roomName}
+                        />
+                      </main>
+
+                      <footer className='chat-form__footer'>
+                        <button
+                          className='chat-button'
+                          type='submit'
+                          disabled={isSubmitting}
+                        >
+                          Create
+                        </button>
+                      </footer>
+                    </article>
+                  </form>
+                )}
+              </Formik>
+            </div>
           )}
           {gateMode === GateModes.JOIN && (
-            <Formik
-              initialValues={{ username: "", roomId }}
-              validationSchema={joinSchema}
-              onSubmit={handleJoinSubmitted}
-            >
-              {({ values, handleSubmit, isSubmitting }) => (
-                <form onSubmit={handleSubmit}>
-                  <div className='username-form'>
-                    <header>
-                      <h1>Join</h1>
-                    </header>
+            <div className='gate__main--form-container'>
+              <Formik
+                initialValues={{ username: "", roomId }}
+                validationSchema={joinSchema}
+                onSubmit={handleJoinSubmitted}
+              >
+                {({ values, handleSubmit, isSubmitting }) => (
+                  <form onSubmit={handleSubmit}>
+                    <article className='chat-form'>
+                      <h3 className='chat-form__header'>Join</h3>
 
-                    <main>
-                      <TextField
-                        label='Room Name'
-                        type='text'
-                        id='username'
-                        name='username'
-                        value={values.username}
-                      />
+                      <main className='chat-form__main'>
+                        <TextField
+                          label='Room Name'
+                          type='text'
+                          id='username'
+                          name='username'
+                          value={values.username}
+                        />
 
-                      <TextField
-                        label='Room Id'
-                        type='text'
-                        id='roomId'
-                        name='roomId'
-                        disabled={roomId !== undefined}
-                        value={values.roomId}
-                      />
-                    </main>
+                        <TextField
+                          label='Room Id'
+                          type='text'
+                          id='roomId'
+                          name='roomId'
+                          disabled={roomId !== undefined}
+                          value={values.roomId}
+                        />
+                      </main>
 
-                    <footer>
-                      <button type='submit' disabled={isSubmitting}>
-                        Join
-                      </button>
-                    </footer>
-                  </div>
-                </form>
-              )}
-            </Formik>
+                      <footer className='chat-form__footer'>
+                        <button
+                          className='chat-button'
+                          type='submit'
+                          disabled={isSubmitting}
+                        >
+                          Join
+                        </button>
+                      </footer>
+                    </article>
+                  </form>
+                )}
+              </Formik>
+            </div>
           )}
         </main>
       </section>
