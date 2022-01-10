@@ -5,6 +5,8 @@ const express = require("express");
 // The router will be added as a middleware and will take control of requests starting with path /record.
 const chatroomRoutes = express.Router();
 
+const broadCastMemberList = require("../tools/broadcast");
+
 // This will help us connect to the database
 const dbo = require("../db/conn");
 
@@ -67,7 +69,6 @@ chatroomRoutes.route("/chatroom/join").post(function (req, res) {
     rule: "member",
     userId,
   });
-  appStorage.set(rooms);
   broadCastMemberList(room.members);
 
   res.json({
@@ -77,20 +78,5 @@ chatroomRoutes.route("/chatroom/join").post(function (req, res) {
     members: room.members,
   });
 });
-
-const broadCastMemberList = (list) => {
-  const io = appStorage.get("io");
-
-  const message = {
-    id: nanoid(),
-    payload: {
-      users: list,
-    },
-    to: "all",
-    sendDate: new Date(),
-    type: 1,
-  };
-  io.to("chat-room").emit("chat-room", JSON.stringify(message));
-};
 
 module.exports = chatroomRoutes;

@@ -59,8 +59,13 @@ export const Chat: FC = () => {
     }
   };
 
-  const initializeSocket = () => {
-    const socket = io("http://localhost:5500");
+  const initializeSocket = (userId: string, roomId: string) => {
+    const socket = io("http://localhost:5500", {
+      query: {
+        userId,
+        roomId,
+      },
+    });
     socket.on("connect", () => {
       setJoined(true);
     });
@@ -99,7 +104,7 @@ export const Chat: FC = () => {
           users: res.data.members,
         });
         navigator.clipboard.writeText(roomLink);
-        initializeSocket();
+        initializeSocket(res.data.userId, res.data.roomId);
       });
   };
 
@@ -128,7 +133,7 @@ export const Chat: FC = () => {
           roomLink,
           users: res.data.members,
         });
-        initializeSocket();
+        initializeSocket(res.data.userId, res.data.roomId);
       });
   };
 
