@@ -54,7 +54,7 @@ chatroomRoutes.route("/chatroom/create").post(function (req, res) {
 chatroomRoutes.route("/chatroom/leave").post(function (req, res) {
   const room = findRoomById(req.body.roomId);
   const userIndex = room.members.findIndex((x) => x.userId === req.body.userId);
-  room.members.slice(userIndex, 1);
+  room.members.splice(userIndex, 1);
   broadCastMemberList(room.members);
   res.json();
 });
