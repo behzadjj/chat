@@ -5,16 +5,16 @@ const express = require("express");
 // The router will be added as a middleware and will take control of requests starting with path /record.
 const chatroomRoutes = express.Router();
 
-const broadCastMemberList = require("../tools/broadcast");
+const broadCastMemberList = require("../../tools/broadcast");
 
 // This will help us connect to the database
-const dbo = require("../db/conn");
+const dbo = require("../../db/conn");
 
 var { nanoid } = require("nanoid");
 // This help convert the id from string to ObjectId for the _id.
 const ObjectId = require("mongodb").ObjectId;
 
-const appStorage = require("../app-storage");
+const appStorage = require("../../app-storage");
 
 appStorage.set("rooms", []);
 

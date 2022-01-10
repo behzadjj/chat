@@ -1,8 +1,9 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
+const dbo = require("../db/conn");
 
-const appStorage = require("./app-storage");
+const appStorage = require("../app-storage");
 
 require("dotenv").config({ path: "./config.env" });
 
@@ -13,7 +14,6 @@ app.use(express.json());
 app.use(require("./routes/record"));
 app.use(require("./routes/chatroom"));
 // get driver connection
-const dbo = require("./db/conn");
 
 app.listen(port, () => {
   // perform a database connection when server starts
