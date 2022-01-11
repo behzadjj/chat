@@ -42,7 +42,9 @@ export class SocketClass {
       connections[connectionId].userId
     );
     connections[connectionId] = undefined;
-    broadCastMemberList(room.members);
+    if (room) {
+      broadCastMemberList(room.members);
+    }
   }
 
   register(app: any) {
@@ -60,7 +62,6 @@ export class SocketClass {
         socket.handshake.query.roomId as string,
         socket.id
       );
-      console.log(ChatRoom.rooms);
       socket.join("chat-room");
 
       socket.on("chat-room", (data) => {
@@ -86,16 +87,13 @@ export class SocketClass {
 
       socket.on("disconnect", (reason) => {
         this.removeConnection(socket.id);
-        // tslint:disable-next-line:no-console
         console.log(reason);
       });
     });
     this.server.listen(SocketClass.WSPort, (err: any) => {
       if (err) {
-        // tslint:disable-next-line:no-console
         console.log(err);
       }
-      // tslint:disable-next-line:no-console
       console.log("Server running on Port ", SocketClass.WSPort);
     });
   }

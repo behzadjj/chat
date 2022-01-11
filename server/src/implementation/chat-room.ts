@@ -15,7 +15,7 @@ export class ChatRoomClass {
     const room = this.rooms.find((x: any) => x.roomId === roomId);
 
     if (!room) {
-      throw console.warn("Room not found"); // Express will catch this on its own.
+      console.warn("Room not found"); // Express will catch this on its own.
     }
 
     return room;
@@ -27,7 +27,7 @@ export class ChatRoomClass {
     const member = room.members.find((x: any) => x.userId === userId);
 
     if (!member) {
-      throw console.warn("User not found"); // Express will catch this on its own.
+      console.warn("User not found"); // Express will catch this on its own.
     }
     return member;
   };
@@ -70,6 +70,9 @@ export class ChatRoomClass {
 
   leave(roomId: string, userId: string): Room {
     const room = this.findRoomById(roomId);
+    if(!room){
+      return;
+    }
     const userIndex = room.members.findIndex((x: any) => x.userId === userId);
     room.members.splice(userIndex, 1);
     return room;

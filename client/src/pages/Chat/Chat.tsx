@@ -1,11 +1,9 @@
 import { FC, useEffect, useRef, useState } from "react";
-import { io } from "socket.io-client";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 import { Gate, UsersList, MessageForm } from "./components";
 import { UserMessages } from "./components/UserMessages";
-
 import {
   IChatMessage,
   IChatMessagePayload,
@@ -15,10 +13,9 @@ import {
   RoomUsers,
 } from "@chat/models";
 import { Message } from "@chat/implement";
+import { initializeSocket, socketChannel } from "@chat/utils";
 
 import "./chat.scss";
-
-let socketChannel: any = undefined;
 
 type Room = {
   roomName: string;
@@ -26,7 +23,7 @@ type Room = {
   user: RoomUsers;
   roomLink?: string;
   isCreator: boolean;
-  users: Array<RoomUsers>;
+  members: Array<RoomUsers>;
 };
 
 export const Chat: FC = () => {
@@ -34,7 +31,6 @@ export const Chat: FC = () => {
   const [room, setRoom] = useState<Room>();
   const navigate = useNavigate();
   const [chatMessages, setChatMessages] = useState<Array<IChatMessage>>([]);
-
   const messageBox = useRef<HTMLDivElement>();
 
   useEffect(() => {
@@ -43,8 +39,9 @@ export const Chat: FC = () => {
     }
   }, [chatMessages]);
 
-  const cl = (stringMessage: string) => {
+  const onMessage = (stringMessage: string) => {
     const message = Message.deserialize(stringMessage) as IMessages;
+    console.log(message);
 
     if (message.type === MessageType.CHAT_MESSAGE) {
       setChatMessages((prevState) => [...prevState, message as IChatMessage]);
@@ -52,31 +49,37 @@ export const Chat: FC = () => {
 
     if (message.type === MessageType.USERS_LIST) {
       const usersMessage = message as IUserListMessage;
-      setRoom((prevState) => ({
-        ...prevState,
-        users: usersMessage.payload.users,
-      }));
+      setRoom((prevState) => {
+        return {
+          ...prevState,
+          members: usersMessage.payload.users,
+        };
+      });
     }
   };
 
-  const initializeSocket = (userId: string, roomId: string) => {
-    const socket = io("http://localhost:5500", {
-      query: {
-        userId,
-        roomId,
-      },
-    });
-    socket.on("connect", () => {
-      setJoined(true);
-    });
-    socket.on("connect_error", () => {
-      setTimeout(() => socket.connect(), 5500);
-    });
+  const onJoined = () => {
+    setJoined(true);
+  };
 
-    socketChannel = socket.on("chat-room", cl);
-    socket.on("disconnect", () => {
-      console.log("disconnected");
+  const prepareRoom = (
+    room: Room,
+    userId: string,
+    username: string,
+    isCreator: boolean
+  ) => {
+    const roomLink = `${document.location.protocol}//${document.location.host}/${room.roomId}`;
+    setRoom({
+      ...room,
+      user: {
+        userId,
+        name: username,
+      },
+      isCreator,
+      roomLink,
     });
+    navigator.clipboard.writeText(roomLink);
+    initializeSocket(userId, room.roomId, onMessage, onJoined);
   };
 
   const handleRoomCreated = (username: string, roomName: string) => {
@@ -86,25 +89,7 @@ export const Chat: FC = () => {
         roomName,
       })
       .then((res) => {
-        const roomLink =
-          document.location.protocol +
-          "//" +
-          document.location.host +
-          "/" +
-          res.data.room.roomId;
-        setRoom({
-          roomName,
-          roomId: res.data.room.roomId,
-          user: {
-            userId: res.data.room.userId,
-            name: username,
-          },
-          roomLink,
-          isCreator: true,
-          users: res.data.room.members,
-        });
-        navigator.clipboard.writeText(roomLink);
-        initializeSocket(res.data.userId, res.data.room.roomId);
+        prepareRoom(res.data.room, res.data.userId, username, true);
       });
   };
 
@@ -115,25 +100,7 @@ export const Chat: FC = () => {
         roomId,
       })
       .then((res) => {
-        const roomLink =
-          document.location.protocol +
-          "//" +
-          document.location.host +
-          "/" +
-          res.data.room.roomId;
-
-        setRoom({
-          roomName: res.data.room.roomName,
-          roomId: res.data.room.roomId,
-          user: {
-            userId: res.data.userId,
-            name: username,
-          },
-          isCreator: false,
-          roomLink,
-          users: res.data.room.members,
-        });
-        initializeSocket(res.data.userId, res.data.room.roomId);
+        prepareRoom(res.data.room, res.data.userId, username, false);
       });
   };
 
@@ -207,7 +174,7 @@ export const Chat: FC = () => {
 
               <main className='room__main'>
                 <div className='room__main--user-list'>
-                  <UsersList list={room.users}></UsersList>
+                  <UsersList list={room.members}></UsersList>
                 </div>
 
                 <div ref={messageBox} className='room__main--chat-messages'>
