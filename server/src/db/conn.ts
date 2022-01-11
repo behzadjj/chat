@@ -2,11 +2,16 @@ import { MongoClient, Db as MongoDb } from "mongodb";
 
 const DbURI = "mongodb://localhost:27017/Mern";
 
-export class Db {
+export class DbClass {
+  private static instance: DbClass;
+  public static get Instance() {
+    if (!DbClass.instance) DbClass.instance = new DbClass();
+
+    return DbClass.instance;
+  }
+
   client: MongoClient;
   database: MongoDb;
-  private static INSTANCE = new Db();
-  static getInstance = () => Db.INSTANCE;
 
   private constructor() {
     this.client = new MongoClient(DbURI, {
@@ -30,8 +35,6 @@ export class Db {
   getDb() {
     return this.database;
   }
-
-  getInstance() {
-    return Db.INSTANCE;
-  }
 }
+
+export const Db = DbClass.Instance;

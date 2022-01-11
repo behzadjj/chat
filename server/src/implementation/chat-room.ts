@@ -1,7 +1,7 @@
 import { nanoid } from "nanoid";
-import { Room } from "../../model/room";
+import { Member, Room } from "../../model/room";
 
-class ChatRoomClass {
+export class ChatRoomClass {
   private static instance: ChatRoomClass;
 
   public static get Instance() {
@@ -15,13 +15,27 @@ class ChatRoomClass {
     const room = this.rooms.find((x: any) => x.roomId === roomId);
 
     if (!room) {
-      throw new Error("BROKEN"); // Express will catch this on its own.
+      throw console.warn("Room not found"); // Express will catch this on its own.
     }
 
     return room;
   };
 
-  create(roomName: string, creatorName: string): Room {
+  findMemberById = (userId: string, roomId: string): Member => {
+    const room = this.findRoomById(roomId);
+
+    const member = room.members.find((x: any) => x.userId === userId);
+
+    if (!member) {
+      throw console.warn("User not found"); // Express will catch this on its own.
+    }
+    return member;
+  };
+
+  create(
+    roomName: string,
+    creatorName: string
+  ): { room: Room; userId: string } {
     const userId = nanoid();
     const roomId = nanoid();
     const room: Room = {
@@ -37,10 +51,10 @@ class ChatRoomClass {
       ],
     };
     this.rooms.push(room);
-    return room;
+    return { room, userId };
   }
 
-  join(memberName: string, roomId: string): Room & { userId: string } {
+  join(memberName: string, roomId: string): { room: Room; userId: string } {
     const room = this.findRoomById(roomId);
 
     const userId = nanoid();
@@ -51,7 +65,7 @@ class ChatRoomClass {
       userId,
     });
 
-    return { userId, ...room };
+    return { room, userId };
   }
 
   leave(roomId: string, userId: string): Room {

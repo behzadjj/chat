@@ -1,53 +1,17 @@
 import { Server } from "socket.io";
 import http from "http";
 
-import { appStorage } from "./appStorage";
+import { appStorage } from "./utils/app-storage";
 import { Db } from "./db/conn";
 import { broadCastMemberList } from "./utils/broadcast";
-
-const setConnection = (
-  userId: string,
-  roomId: string,
-  connectionId: string
-) => {
-  const connections = appStorage.get("connections") || {};
-  const connection = {
-    roomId,
-    userId,
-    connectionId,
-  };
-
-  connections[connectionId] = connection;
-
-  appStorage.set("connections", connections);
-};
-
-const removeConnection = (connectionId: any) => {
-  const connections = appStorage.get("connections");
-
-  const rooms = appStorage.get("rooms");
-  if (!connections || !rooms || !connections[connectionId]) {
-    return;
-  }
-  const room = rooms.find(
-    (x: any) => x.roomId === connections[connectionId].roomId
-  );
-
-  if (!room) {
-    return;
-  }
-  const index = room.members.findIndex(
-    (x: any) => x.userId === connections[connectionId].userId
-  );
-
-  room.members = room.members.splice(index, 1);
-
-  broadCastMemberList(room.members);
-};
+import { ChatRoom } from "./implementation/chat-room";
 
 export class SocketClass {
   private static WSPort = 5500;
   private static instance: SocketClass;
+
+  private connections: { [key: string]: { userId: string; roomId: string } } =
+    {};
 
   public static get Instance() {
     if (!SocketClass.instance) SocketClass.instance = new SocketClass();
@@ -60,6 +24,27 @@ export class SocketClass {
 
   private constructor() {}
 
+  setConnection(userId: string, roomId: string, connectionId: string) {
+    this.connections[connectionId] = {
+      roomId,
+      userId,
+    };
+  }
+
+  removeConnection(connectionId: any) {
+    const connections = this.connections;
+    if (!connections || !ChatRoom.rooms || !connections[connectionId]) {
+      return;
+    }
+
+    const room = ChatRoom.leave(
+      connections[connectionId].roomId,
+      connections[connectionId].userId
+    );
+    connections[connectionId] = undefined;
+    broadCastMemberList(room.members);
+  }
+
   register(app: any) {
     this.server = http.createServer(app);
     this.io = new Server(this.server, {
@@ -70,26 +55,27 @@ export class SocketClass {
     this.io.on("connection", (socket) => {
       // tslint:disable-next-line:no-console
       console.log("client connected: ", socket.id);
-      setConnection(
+      this.setConnection(
         socket.handshake.query.userId as string,
         socket.handshake.query.roomId as string,
         socket.id
       );
+      console.log(ChatRoom.rooms);
       socket.join("chat-room");
 
       socket.on("chat-room", (data) => {
         const message = JSON.parse(data);
         // const messageId = nanoid();
 
-        const room = appStorage
-          .get("rooms")
-          .find((x: any) => x.roomId === message.payload.roomId);
+        const room = ChatRoom.rooms.find(
+          (x: any) => x.roomId === message.payload.roomId
+        );
 
         appStorage.set("io", this.io);
         if (!room) {
           return;
         }
-        const doConnect = Db.getInstance().getDb();
+        const doConnect = Db.getDb();
         // message.messageId = messageId;
 
         doConnect.collection("chat").insertOne(message, (err) => {
@@ -99,7 +85,7 @@ export class SocketClass {
       });
 
       socket.on("disconnect", (reason) => {
-        removeConnection(socket.id);
+        this.removeConnection(socket.id);
         // tslint:disable-next-line:no-console
         console.log(reason);
       });

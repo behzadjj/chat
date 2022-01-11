@@ -1,15 +1,12 @@
 import { Application } from "express";
 
-import { appStorage } from "../appStorage";
 import { broadCastMemberList } from "../utils/broadcast";
-import { ChatRoom } from "../utils/chat-room";
-
-appStorage.set("rooms", []);
+import { ChatRoom } from "../implementation/chat-room";
 
 export const register = (app: Application) => {
   app.route("/chatroom/create").post((req, res) => {
-    const room = ChatRoom.create(req.body.roomName, req.body.username);
-    res.json(room);
+    const result = ChatRoom.create(req.body.roomName, req.body.username);
+    res.json(result);
   });
 
   app.route("/chatroom/leave").post((req, res) => {
@@ -19,8 +16,8 @@ export const register = (app: Application) => {
   });
 
   app.route("/chatroom/join").post((req, res) => {
-    const join = ChatRoom.join(req.body.username, req.body.roomId);
-    broadCastMemberList(join.members);
-    res.json(join);
+    const result = ChatRoom.join(req.body.username, req.body.roomId);
+    broadCastMemberList(result.room.members);
+    res.json(result);
   });
 };

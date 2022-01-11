@@ -27,7 +27,7 @@ class ServerClass {
     registerRoutes(this.app);
     this.app.listen(ServerClass.PORT, () => {
       // perform a database connection when server starts
-      Db.getInstance().connectToServer((err: any) => {
+      Db.connectToServer((err: any) => {
         // tslint:disable-next-line:no-console
         if (err) console.error(err);
       });
