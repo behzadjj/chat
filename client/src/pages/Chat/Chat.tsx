@@ -91,20 +91,20 @@ export const Chat: FC = () => {
           "//" +
           document.location.host +
           "/" +
-          res.data.roomId;
+          res.data.room.roomId;
         setRoom({
           roomName,
-          roomId: res.data.roomId,
+          roomId: res.data.room.roomId,
           user: {
-            userId: res.data.userId,
+            userId: res.data.room.userId,
             name: username,
           },
           roomLink,
           isCreator: true,
-          users: res.data.members,
+          users: res.data.room.members,
         });
         navigator.clipboard.writeText(roomLink);
-        initializeSocket(res.data.userId, res.data.roomId);
+        initializeSocket(res.data.userId, res.data.room.roomId);
       });
   };
 
@@ -120,20 +120,20 @@ export const Chat: FC = () => {
           "//" +
           document.location.host +
           "/" +
-          res.data.roomId;
+          res.data.room.roomId;
 
         setRoom({
-          roomName: res.data.roomName,
-          roomId: res.data.roomId,
+          roomName: res.data.room.roomName,
+          roomId: res.data.room.roomId,
           user: {
             userId: res.data.userId,
             name: username,
           },
           isCreator: false,
           roomLink,
-          users: res.data.members,
+          users: res.data.room.members,
         });
-        initializeSocket(res.data.userId, res.data.roomId);
+        initializeSocket(res.data.userId, res.data.room.roomId);
       });
   };
 
