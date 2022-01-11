@@ -2,9 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.broadCastMemberList = void 0;
 const nanoid_1 = require("nanoid");
-const appStorage_1 = require("../appStorage");
+const socket_initialization_1 = require("./../socket-initialization");
 const broadCastMemberList = (list) => {
-    const io = appStorage_1.appStorage.get("io");
+    const io = socket_initialization_1.Socket.io;
     const message = {
         id: (0, nanoid_1.nanoid)(),
         payload: {

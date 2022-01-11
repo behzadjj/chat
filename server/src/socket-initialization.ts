@@ -1,5 +1,4 @@
 import { Server } from "socket.io";
-import { Server as WebServer } from "./server.initialization";
 import http from "http";
 
 import { appStorage } from "./appStorage";
@@ -59,8 +58,10 @@ export class SocketClass {
   io: Server;
   server: any;
 
-  private constructor() {
-    this.server = http.createServer(WebServer.app);
+  private constructor() {}
+
+  register(app: any) {
+    this.server = http.createServer(app);
     this.io = new Server(this.server, {
       cors: {
         origin: "http://localhost:3000",
@@ -103,9 +104,6 @@ export class SocketClass {
         console.log(reason);
       });
     });
-  }
-
-  register() {
     this.server.listen(SocketClass.WSPort, (err: any) => {
       if (err) {
         // tslint:disable-next-line:no-console

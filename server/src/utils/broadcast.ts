@@ -1,8 +1,8 @@
 import { nanoid } from "nanoid";
-import { appStorage } from "../appStorage";
+import { Socket } from "./../socket-initialization";
 
 export const broadCastMemberList = (list: any) => {
-  const io = appStorage.get("io");
+  const io = Socket.io;
 
   const message = {
     id: nanoid(),

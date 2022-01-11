@@ -5,7 +5,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Socket = exports.SocketClass = void 0;
 const socket_io_1 = require("socket.io");
-const server_initialization_1 = require("./server.initialization");
 const http_1 = __importDefault(require("http"));
 const appStorage_1 = require("./appStorage");
 const conn_1 = require("./db/conn");
@@ -35,8 +34,14 @@ const removeConnection = (connectionId) => {
     (0, broadcast_1.broadCastMemberList)(room.members);
 };
 class SocketClass {
-    constructor() {
-        this.server = http_1.default.createServer(server_initialization_1.Server.app);
+    constructor() { }
+    static get Instance() {
+        if (!SocketClass.instance)
+            SocketClass.instance = new SocketClass();
+        return SocketClass.instance;
+    }
+    register(app) {
+        this.server = http_1.default.createServer(app);
         this.io = new socket_io_1.Server(this.server, {
             cors: {
                 origin: "http://localhost:3000",
@@ -71,13 +76,6 @@ class SocketClass {
                 console.log(reason);
             });
         });
-    }
-    static get Instance() {
-        if (!SocketClass.instance)
-            SocketClass.instance = new SocketClass();
-        return SocketClass.instance;
-    }
-    register() {
         this.server.listen(SocketClass.WSPort, (err) => {
             if (err) {
                 // tslint:disable-next-line:no-console
