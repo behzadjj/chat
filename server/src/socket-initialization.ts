@@ -65,9 +65,11 @@ export class SocketClass {
       socket.join("chat-room");
 
       socket.on("chat-room", (data) => {
+        console.log(data);
         const message = JSON.parse(data);
         // const messageId = nanoid();
 
+        console.log(message.payload.roomId);
         const room = ChatRoom.rooms.find(
           (x: any) => x.roomId === message.payload.roomId
         );

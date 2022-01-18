@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom";
 import { Gate, UsersList, MessageForm } from "./components";
 import { UserMessages } from "./components/UserMessages";
 import {
+  ICallInvitationPayload,
+  ICallMessage,
   IChatMessage,
   IChatMessagePayload,
   IMessages,
@@ -13,7 +15,7 @@ import {
   RoomUsers,
 } from "@chat/models";
 import { Message } from "@chat/implement";
-import { initializeSocket, socketChannel } from "@chat/utils";
+import { initializeSocket, socketChannel, WebRtc } from "@chat/utils";
 
 import "./chat.scss";
 
@@ -32,16 +34,17 @@ export const Chat: FC = () => {
   const navigate = useNavigate();
   const [chatMessages, setChatMessages] = useState<Array<IChatMessage>>([]);
   const messageBox = useRef<HTMLDivElement>();
-
   useEffect(() => {
     if (messageBox && messageBox.current) {
       messageBox.current.scrollTo(0, messageBox.current.scrollHeight);
     }
   }, [chatMessages]);
 
+  const getRoom = () => room;
+
   const onMessage = (stringMessage: string) => {
+    console.log(room);
     const message = Message.deserialize(stringMessage) as IMessages;
-    console.log(message);
 
     if (message.type === MessageType.CHAT_MESSAGE) {
       setChatMessages((prevState) => [...prevState, message as IChatMessage]);
@@ -55,6 +58,100 @@ export const Chat: FC = () => {
           members: usersMessage.payload.users,
         };
       });
+    }
+
+    if (message.type === MessageType.CALL_ANSWER) {
+      console.log(message, getRoom());
+      const index = (message.to as Array<RoomUsers>).findIndex(
+        (x) => x.userId === room.user.userId
+      );
+
+      if (index === -1) {
+        return;
+      }
+
+      let localStream: MediaStream = null;
+      const callInvitation = message as ICallMessage;
+      const desc = new RTCSessionDescription(callInvitation.payload.sdp);
+
+      const myPeerConnection = WebRtc.Instance.myPeerConnection;
+
+      myPeerConnection
+        .setRemoteDescription(desc)
+        .then(() => {
+          return navigator.mediaDevices.getUserMedia({
+            audio: true,
+          });
+        })
+        .then((stream) => {
+          localStream = stream;
+          const videoElement: HTMLVideoElement = document.getElementById(
+            "local_video"
+          ) as HTMLVideoElement;
+          videoElement.srcObject = localStream;
+
+          localStream
+            .getTracks()
+            .forEach((track) => myPeerConnection.addTrack(track, localStream));
+        });
+    }
+
+    if (message.type === MessageType.CALL_INVITATION) {
+      setRoom((prevState) => {
+        return prevState;
+      });
+      const index = (message.to as Array<RoomUsers>).findIndex(
+        (x) => x.userId === room.user.userId
+      );
+
+      if (index === -1) {
+        return;
+      }
+      let localStream: MediaStream = null;
+      WebRtc.Instance.createPeerConnection();
+      const callInvitation = message as ICallMessage;
+      const caller = message.from;
+      const desc = new RTCSessionDescription(callInvitation.payload.sdp);
+
+      const myPeerConnection = WebRtc.Instance.myPeerConnection;
+
+      myPeerConnection
+        .setRemoteDescription(desc)
+        .then(() => {
+          return navigator.mediaDevices.getUserMedia({
+            audio: true,
+          });
+        })
+        .then((stream) => {
+          localStream = stream;
+          const videoElement: HTMLVideoElement = document.getElementById(
+            "local_video"
+          ) as HTMLVideoElement;
+          videoElement.srcObject = localStream;
+
+          localStream
+            .getTracks()
+            .forEach((track) => myPeerConnection.addTrack(track, localStream));
+        })
+        .then(() => {
+          return myPeerConnection.createAnswer();
+        })
+        .then((answer) => {
+          return myPeerConnection.setLocalDescription(answer);
+        })
+        .then(() => {
+          const message = new Message<ICallInvitationPayload>(
+            room.user,
+            MessageType.CALL_ANSWER,
+            [caller],
+            {
+              sdp: myPeerConnection.localDescription,
+              roomId: room.roomId,
+            }
+          );
+
+          socketChannel.emit("chat-room", Message.serialize(message));
+        });
     }
   };
 
@@ -150,6 +247,8 @@ export const Chat: FC = () => {
         <div className='chat__room-container'>
           {joined && (
             <section className='room'>
+              <video id='received_video' autoPlay></video>
+              <video id='local_video' autoPlay muted></video>
               <header className='room__header'>
                 <h1>Room Name: {room.roomName}</h1>
 
@@ -174,7 +273,11 @@ export const Chat: FC = () => {
 
               <main className='room__main'>
                 <div className='room__main--user-list'>
-                  <UsersList list={room.members}></UsersList>
+                  <UsersList
+                    user={room.user}
+                    roomId={room.roomId}
+                    list={room.members}
+                  ></UsersList>
                 </div>
 
                 <div ref={messageBox} className='room__main--chat-messages'>
