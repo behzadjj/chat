@@ -1,6 +1,7 @@
 import { FC, useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 
 import { Gate, UsersList, MessageForm } from "./components";
 import { UserMessages } from "./components/UserMessages";
@@ -16,6 +17,8 @@ import { Message } from "@chat/implement";
 import { initializeSocket, socketChannel } from "@chat/utils";
 
 import "./chat.scss";
+import { selectMessages } from "./state/chatSelector";
+import { receivedMessage } from ".";
 
 type Room = {
   roomName: string;
@@ -28,23 +31,24 @@ type Room = {
 
 export const Chat: FC = () => {
   const [joined, setJoined] = useState(false);
+  const dispatch = useDispatch();
+  const messages = useSelector(selectMessages);
   const [room, setRoom] = useState<Room>();
   const navigate = useNavigate();
-  const [chatMessages, setChatMessages] = useState<Array<IChatMessage>>([]);
   const messageBox = useRef<HTMLDivElement>();
 
   useEffect(() => {
     if (messageBox && messageBox.current) {
       messageBox.current.scrollTo(0, messageBox.current.scrollHeight);
     }
-  }, [chatMessages]);
+  }, [messages]);
 
   const onMessage = (stringMessage: string) => {
     const message = Message.deserialize(stringMessage) as IMessages;
     console.log(message);
 
     if (message.type === MessageType.CHAT_MESSAGE) {
-      setChatMessages((prevState) => [...prevState, message as IChatMessage]);
+      dispatch(receivedMessage(message as IChatMessage));
     }
 
     if (message.type === MessageType.USERS_LIST) {
@@ -178,7 +182,7 @@ export const Chat: FC = () => {
                 </div>
 
                 <div ref={messageBox} className='room__main--chat-messages'>
-                  <UserMessages messages={chatMessages}></UserMessages>
+                  <UserMessages messages={messages}></UserMessages>
                 </div>
               </main>
 
