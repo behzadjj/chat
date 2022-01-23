@@ -1,4 +1,4 @@
-import { FC, useEffect, useRef } from "react";
+import { FC } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { Gate, UsersList, MessageForm } from "./components";
@@ -7,7 +7,6 @@ import { UserMessages } from "./components/UserMessages";
 import "./chat.scss";
 import {
   selectJoined,
-  selectMessages,
   selectRoomId,
   selectRoomLink,
   selectRoomName,
@@ -17,19 +16,11 @@ import { leaveRoom } from ".";
 
 export const Chat: FC = () => {
   const dispatch = useDispatch();
-  const messages = useSelector(selectMessages);
   const joined = useSelector(selectJoined);
   const roomName = useSelector(selectRoomName);
   const roomLink = useSelector(selectRoomLink);
   const roomId = useSelector(selectRoomId);
   const user = useSelector(selectUser);
-  const messageBox = useRef<HTMLDivElement>();
-
-  useEffect(() => {
-    if (messageBox && messageBox.current) {
-      messageBox.current.scrollTo(0, messageBox.current.scrollHeight);
-    }
-  }, [messages]);
 
   const handleLeaveClicked = () => {
     dispatch(
@@ -81,8 +72,8 @@ export const Chat: FC = () => {
                   <UsersList></UsersList>
                 </div>
 
-                <div ref={messageBox} className='room__main--chat-messages'>
-                  <UserMessages messages={messages}></UserMessages>
+                <div className='room__main--chat-messages'>
+                  <UserMessages></UserMessages>
                 </div>
               </main>
 

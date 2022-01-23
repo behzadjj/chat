@@ -1,23 +1,30 @@
-import { FC } from "react";
+import { FC, useEffect, useRef } from "react";
 import { format } from "date-fns";
+import { useSelector } from "react-redux";
 
 import { IChatMessage } from "@chat/models";
+import { selectMessages } from "@chat/pages";
 
 import "./userMessages.scss";
 
 export type ChatMessage = IChatMessage & { fromName: string };
 
-type Props = {
-  messages: Array<IChatMessage>;
-};
+export const UserMessages: FC = () => {
+  const messages = useSelector(selectMessages);
+  const messageBox = useRef<HTMLDivElement>();
 
-export const UserMessages: FC<Props> = ({ messages }) => {
+  useEffect(() => {
+    if (messageBox && messageBox.current) {
+      messageBox.current.scrollTo(0, messageBox.current.scrollHeight);
+    }
+  }, [messages]);
+
   return (
     <>
       <section className='user-messages'>
         <h5 className='user-messages__header'>Messages</h5>
 
-        <main className='user-messages__main'>
+        <main ref={messageBox} className='user-messages__main'>
           {messages &&
             messages.map((message) => (
               <div className='user-message' key={message.id}>
