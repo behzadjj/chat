@@ -1,8 +1,13 @@
 .user-messages {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+
     &__header {
     }
 
     &__main {
+        flex: 1;
         overflow: auto;
         font-size: 1.2rem;
 
