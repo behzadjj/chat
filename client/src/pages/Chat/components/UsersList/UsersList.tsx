@@ -1,25 +1,24 @@
-import { RoomUsers } from "models";
 import { FC } from "react";
+import { useSelector } from "react-redux";
+
+import { selectRoomMembers } from "@chat/pages";
 
 import "./userList.scss";
 
-type Props = {
-  list: Array<RoomUsers>;
-};
-
-export const UsersList: FC<Props> = ({ list }) => {
+export const UsersList: FC = () => {
+  const members = useSelector(selectRoomMembers);
   return (
     <>
       <section className='users-list'>
         <h5 className='users-list__header'>Users list</h5>
 
         <main className='users-list__main'>
-          {list &&
-            list.map((user) => (
-              <div className='user-list-item' key={user.userId}>
-                <span>name: {user.name}</span>
+          {members &&
+            members.map((member) => (
+              <div className='user-list-item' key={member.userId}>
+                <span>name: {member.name}</span>
                 &nbsp;
-                {user.rule === "moderator" && <span>*</span>}
+                {member.rule === "moderator" && <span>*</span>}
               </div>
             ))}
         </main>

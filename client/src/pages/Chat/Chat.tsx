@@ -1,40 +1,28 @@
-import { FC, useEffect, useRef, useState } from "react";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { FC, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { Gate, UsersList, MessageForm } from "./components";
 import { UserMessages } from "./components/UserMessages";
-import {
-  IChatMessage,
-  IChatMessagePayload,
-  IMessages,
-  IUserListMessage,
-  MessageType,
-  RoomUsers,
-} from "@chat/models";
-import { Message } from "@chat/implement";
-import { initializeSocket, socketChannel } from "@chat/utils";
 
 import "./chat.scss";
-import { selectMessages } from "./state/chatSelector";
-import { receivedMessage } from ".";
-
-type Room = {
-  roomName: string;
-  roomId: string;
-  user: RoomUsers;
-  roomLink?: string;
-  isCreator: boolean;
-  members: Array<RoomUsers>;
-};
+import {
+  selectJoined,
+  selectMessages,
+  selectRoomId,
+  selectRoomLink,
+  selectRoomName,
+  selectUser,
+} from "./state/chatSelector";
+import { leaveRoom } from ".";
 
 export const Chat: FC = () => {
-  const [joined, setJoined] = useState(false);
   const dispatch = useDispatch();
   const messages = useSelector(selectMessages);
-  const [room, setRoom] = useState<Room>();
-  const navigate = useNavigate();
+  const joined = useSelector(selectJoined);
+  const roomName = useSelector(selectRoomName);
+  const roomLink = useSelector(selectRoomLink);
+  const roomId = useSelector(selectRoomId);
+  const user = useSelector(selectUser);
   const messageBox = useRef<HTMLDivElement>();
 
   useEffect(() => {
@@ -43,98 +31,13 @@ export const Chat: FC = () => {
     }
   }, [messages]);
 
-  const onMessage = (stringMessage: string) => {
-    const message = Message.deserialize(stringMessage) as IMessages;
-    console.log(message);
-
-    if (message.type === MessageType.CHAT_MESSAGE) {
-      dispatch(receivedMessage(message as IChatMessage));
-    }
-
-    if (message.type === MessageType.USERS_LIST) {
-      const usersMessage = message as IUserListMessage;
-      setRoom((prevState) => {
-        return {
-          ...prevState,
-          members: usersMessage.payload.users,
-        };
-      });
-    }
-  };
-
-  const onJoined = () => {
-    setJoined(true);
-  };
-
-  const prepareRoom = (
-    room: Room,
-    userId: string,
-    username: string,
-    isCreator: boolean
-  ) => {
-    const roomLink = `${document.location.protocol}//${document.location.host}/${room.roomId}`;
-    setRoom({
-      ...room,
-      user: {
-        userId,
-        name: username,
-      },
-      isCreator,
-      roomLink,
-    });
-    navigator.clipboard.writeText(roomLink);
-    initializeSocket(userId, room.roomId, onMessage, onJoined);
-  };
-
-  const handleRoomCreated = (username: string, roomName: string) => {
-    axios
-      .post("http://localhost:5000/chatroom/create", {
-        username,
-        roomName,
-      })
-      .then((res) => {
-        prepareRoom(res.data.room, res.data.userId, username, true);
-      });
-  };
-
-  const handleUserJoined = (username: string, roomId: string) => {
-    axios
-      .post("http://localhost:5000/chatroom/join", {
-        username,
+  const handleLeaveClicked = () => {
+    dispatch(
+      leaveRoom({
+        userId: user.userId,
         roomId,
       })
-      .then((res) => {
-        prepareRoom(res.data.room, res.data.userId, username, false);
-      });
-  };
-
-  const handleMessageSent = (text: string) => {
-    if (socketChannel) {
-      const message = new Message<IChatMessagePayload>(
-        room.user,
-        MessageType.CHAT_MESSAGE,
-        "all",
-        {
-          text,
-          chatMessageType: "TEXT",
-          roomId: room.roomId,
-        }
-      );
-
-      socketChannel.emit("chat-room", Message.serialize(message));
-    }
-  };
-
-  const handleLeaveClicked = () => {
-    axios
-      .post("http://localhost:5000/chatroom/leave", {
-        userId: room.user.userId,
-        roomId: room.roomId,
-      })
-      .then(() => {
-        navigate("/");
-        setJoined(false);
-      });
+    );
   };
 
   return (
@@ -143,10 +46,7 @@ export const Chat: FC = () => {
         <div className='chat__gate-container'>
           {!joined && (
             <section>
-              <Gate
-                onCreate={handleRoomCreated}
-                onJoin={handleUserJoined}
-              ></Gate>
+              <Gate></Gate>
             </section>
           )}
         </div>
@@ -155,13 +55,13 @@ export const Chat: FC = () => {
           {joined && (
             <section className='room'>
               <header className='room__header'>
-                <h1>Room Name: {room.roomName}</h1>
+                <h1>Room Name: {roomName}</h1>
 
-                {room && (
+                {
                   <>
                     <div className='room__header--actions'>
                       <h3>
-                        Room link: <a href={room.roomLink}>Room</a>
+                        Room link: <a href={roomLink}>Room</a>
                       </h3>
 
                       <button
@@ -173,12 +73,12 @@ export const Chat: FC = () => {
                       </button>
                     </div>
                   </>
-                )}
+                }
               </header>
 
               <main className='room__main'>
                 <div className='room__main--user-list'>
-                  <UsersList list={room.members}></UsersList>
+                  <UsersList></UsersList>
                 </div>
 
                 <div ref={messageBox} className='room__main--chat-messages'>
@@ -187,7 +87,7 @@ export const Chat: FC = () => {
               </main>
 
               <footer className='room__footer'>
-                <MessageForm onMessage={handleMessageSent}></MessageForm>
+                <MessageForm></MessageForm>
               </footer>
             </section>
           )}

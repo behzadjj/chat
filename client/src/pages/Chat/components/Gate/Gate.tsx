@@ -1,10 +1,13 @@
 import { FC, useEffect, useState } from "react";
 import { Formik, FormikHelpers } from "formik";
-import * as Yup from "yup";
-import { TextField } from "@chat/components/TextField/TextField";
 import { useParams } from "react-router-dom";
+import * as Yup from "yup";
+
+import { TextField } from "@chat/components/TextField/TextField";
 
 import "./gate.scss";
+import { useDispatch } from "react-redux";
+import { createRoom, joinRoom } from "@chat/pages";
 
 type CreateFormValues = {
   username: string;
@@ -41,9 +44,10 @@ type Props = {
   onJoin?: (username: string, roomId: string) => void;
 };
 
-export const Gate: FC<Props> = ({ onCreate, onJoin }) => {
+export const Gate: FC<Props> = () => {
   const [gateMode, setGateMode] = useState<GateModes>();
   const { roomId } = useParams();
+  const dispatch = useDispatch();
 
   useEffect(() => {
     if (roomId) {
@@ -55,7 +59,8 @@ export const Gate: FC<Props> = ({ onCreate, onJoin }) => {
     values: CreateFormValues,
     { setSubmitting }: FormikHelpers<CreateFormValues>
   ) => {
-    if (onCreate) onCreate(values.username, values.roomName);
+    // if (onCreate) onCreate(values.username, values.roomName);
+    dispatch(createRoom(values));
     setSubmitting(false);
   };
 
@@ -63,7 +68,8 @@ export const Gate: FC<Props> = ({ onCreate, onJoin }) => {
     values: JoinFormValues,
     { setSubmitting }: FormikHelpers<JoinFormValues>
   ) => {
-    if (onJoin) onJoin(values.username, values.roomId);
+    // if (onJoin) onJoin(values.username, values.roomId);
+    dispatch(joinRoom(values));
     setSubmitting(false);
   };
 
