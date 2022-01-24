@@ -1,13 +1,18 @@
 import { io, Socket } from "socket.io-client";
 
 import { Dispatch } from "@chat/redux";
-import { receivedMessage, setRoomMembers } from "@chat/pages";
+import {
+  receivedMessage,
+  setRoomMembers,
+  receivedCallMessage,
+} from "@chat/pages";
 import { Message } from "@chat/implement";
 import {
   IChatMessage,
   IMessages,
   IUserListMessage,
   MessageType,
+  ICallMessage,
 } from "@chat/models";
 
 export let socketChannel: Socket;
@@ -22,6 +27,10 @@ const defaultMessageHandler = (stringMessage: string) => {
   if (message.type === MessageType.USERS_LIST) {
     const usersMessage = message as IUserListMessage;
     Dispatch(setRoomMembers(usersMessage.payload.users));
+  }
+  if (message.type === MessageType.CALL_MESSAGE) {
+    const callMessage = message as ICallMessage;
+    Dispatch(receivedCallMessage(callMessage));
   }
 };
 

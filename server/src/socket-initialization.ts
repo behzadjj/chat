@@ -68,14 +68,14 @@ export class SocketClass {
         const message = JSON.parse(data);
         // const messageId = nanoid();
 
-        const room = ChatRoom.rooms.find(
-          (x: any) => x.roomId === message.payload.roomId
-        );
+        // const room = ChatRoom.rooms.find(
+        //   (x: any) => x.roomId === message.payload.roomId
+        // );
 
         appStorage.set("io", this.io);
-        if (!room) {
-          return;
-        }
+        // if (!room) {
+        //   return;
+        // }
         const doConnect = Db.getDb();
         // message.messageId = messageId;
 

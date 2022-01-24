@@ -3,6 +3,7 @@ import { RoomUsers } from "./room-user";
 export enum MessageType {
   CHAT_MESSAGE = 0,
   USERS_LIST = 1,
+  CALL_MESSAGE = 2,
 }
 
 export interface IMessage<T> {
@@ -44,6 +45,14 @@ export interface IChatMessagePayload {
   roomId?: string;
 }
 
+export interface ICallMessagePayload {
+  type: any;
+  target: string;
+  sdp?: RTCSessionDescription;
+  name?: string;
+  candidate?: any;
+}
+
 /**
  * Internal chat message model
  */
@@ -52,6 +61,7 @@ export interface IUserListMessagePayload {
 }
 
 export type IChatMessage = IMessage<IChatMessagePayload>;
+export type ICallMessage = IMessage<ICallMessagePayload>;
 export type IUserListMessage = IMessage<IUserListMessagePayload>;
 
-export type IMessages = IChatMessage | IUserListMessage;
+export type IMessages = IChatMessage | IUserListMessage | ICallMessage;

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-param-reassign */
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { IChatMessage, IChatState, IRoom } from "models";
+import { IChatMessage, IChatState, IRoom, ICallMessage } from "@chat/models";
 
 export type JoinPayload = { roomId: string; username: string };
 export type CreatePayload = { roomName: string; username: string };
@@ -11,6 +11,7 @@ export type LeavePayload = { roomId: string; userId: string };
 const initialState: IChatState = {
   messages: [],
   roomName: undefined,
+  streamId: undefined,
   roomId: undefined,
   user: {
     name: undefined,
@@ -22,7 +23,7 @@ const initialState: IChatState = {
   joined: false,
 };
 
-const chatSlice = createSlice({
+export const chatSlice = createSlice({
   name: "chat",
   initialState,
   reducers: {
@@ -53,7 +54,11 @@ const chatSlice = createSlice({
     setJoined(state, { payload }: PayloadAction<boolean>) {
       state.joined = payload;
     },
+    setLocalStreamId(state, { payload }: PayloadAction<string>) {
+      state.streamId = payload;
+    },
     leaveRoom(_state, _: PayloadAction<LeavePayload>) {},
+    receivedCallMessage(_state, _: PayloadAction<ICallMessage>) {},
   },
 });
 
@@ -66,6 +71,7 @@ export const {
   setRoomMembers,
   setJoined,
   leaveRoom,
+  receivedCallMessage,
 } = chatSlice.actions;
 
 export const chatReducer = chatSlice.reducer;

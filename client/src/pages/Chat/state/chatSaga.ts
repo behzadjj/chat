@@ -1,6 +1,7 @@
 import { PayloadAction } from "@reduxjs/toolkit";
-import { call, put, takeEvery } from "redux-saga/effects";
+import { call, put, select, takeEvery } from "redux-saga/effects";
 import { AxiosResponse } from "axios";
+import { ICallMessage } from "@chat/models";
 
 import { CreateResponse, RoomService } from "@chat/service/roomService";
 import {
@@ -15,8 +16,11 @@ import {
   LeavePayload,
   setJoined,
   leaveRoom,
+  selectUser,
 } from ".";
 import { initializeSocket } from "@chat/utils";
+import { receivedCallMessage } from "./chatSlice";
+import { webRTC } from "@chat/utils/webrtc";
 
 function* handleClearChat() {
   yield console.log("hello there");
@@ -80,6 +84,11 @@ function* handleLeaveRoom({ payload }: PayloadAction<LeavePayload>) {
   }
 }
 
+function* handleReceivedCallMessaged({ payload }: PayloadAction<ICallMessage>) {
+  yield select(selectUser);
+  yield webRTC.Instance.handleMessages(payload);
+}
+
 export function* chatSaga() {
   yield takeEvery(clearChat, handleClearChat);
   yield takeEvery(receivedMessage, handleClearChat);
@@ -87,4 +96,5 @@ export function* chatSaga() {
   yield takeEvery(createRoom, handleCreateRoom);
   yield takeEvery(roomInitialized, handleRoomInitialized);
   yield takeEvery(leaveRoom, handleLeaveRoom);
+  yield takeEvery(receivedCallMessage, handleReceivedCallMessaged);
 }
