@@ -31,6 +31,7 @@ export const UsersList: FC = () => {
                 {member.rule === "moderator" && <span>*</span>}
                 {member.userId !== user.userId && (
                   <button
+                    className='chat-link-button'
                     onClick={() => {
                       handleCallClicked(member);
                     }}

@@ -23,6 +23,20 @@
   }
 }
 
+.chat-link-button {
+  background-color: unset;
+  color: #17a2b8;
+  transition: all 0.2s;
+  outline: 0;
+  border: 0;
+
+  &:hover,
+  &:active {
+    text-decoration: none;
+    color: #f8f9fa;
+  }
+}
+
 .route-anchor {
   padding: 3rem 5rem;
   font-size: 2rem;
