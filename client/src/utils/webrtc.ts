@@ -5,12 +5,18 @@ import {
   MessageType,
   RoomUsers,
 } from "@chat/models";
-import { chatSlice } from "@chat/pages";
+import { Dispatch } from "@chat/redux";
+import {
+  setCallActivated,
+  setLocalStreamId,
+  setRemoteStreamId,
+} from "@chat/pages";
 import { socketChannel } from "./socket";
+import { streamStore } from "./stream-store";
 
 const mediaConstraints = {
   audio: true, // We want an audio track
-  video: false,
+  video: true,
 };
 
 export class webRTC {
@@ -28,8 +34,9 @@ export class webRTC {
   webcamStream: MediaStream;
   transceiver: (track: MediaStreamTrack) => RTCRtpTransceiver;
 
-  start = async (user: RoomUsers) => {
+  start = async (user: RoomUsers, me: RoomUsers) => {
     this.target = user;
+    this.me = me;
     // Call createPeerConnection() to create the RTCPeerConnection.
     // When this returns, myPeerConnection is our RTCPeerConnection
     // and webcamStream is a stream coming from the camera. They are
@@ -48,6 +55,11 @@ export class webRTC {
       this.webcamStream = await navigator.mediaDevices.getDisplayMedia(
         mediaConstraints
       );
+
+      const streamId = this.webcamStream.id;
+      streamStore.set(streamId, this.webcamStream);
+      Dispatch(setLocalStreamId(streamId));
+
       // document.getElementById("local_video").srcObject = this.webcamStream;
     } catch (err) {
       this.handleGetUserMediaError(err);
@@ -69,7 +81,7 @@ export class webRTC {
   };
 
   createPeerConnection() {
-    this.me = chatSlice.getInitialState().user;
+    Dispatch(setCallActivated(true));
     // Create an RTCPeerConnection which knows to use our chosen
     // STUN server.
     this.log("start connecting");
@@ -98,19 +110,20 @@ export class webRTC {
   }
 
   handleMessages(message: ICallMessage) {
-    if (message.from && this.me && message.from.userId === this.me.userId) {
-      console.log("it's me");
+    const msg = message.payload;
+    if (this.me && message.from.userId === this.me.userId) {
       return;
     }
-    const msg = message.payload;
     switch (msg.type) {
       // Signaling messages: these messages are used to trade WebRTC
       // signaling information during negotiations leading up to a video
       // call.
 
-      case "video-offer": // Invitation and offer to chat
+      case "video-offer": {
+        // Invitation and offer to chat
         this.handleVideoOfferMsg(msg, message.from);
         break;
+      }
 
       case "video-answer": // Callee has answered our offer
         this.handleVideoAnswerMsg(msg);
@@ -150,7 +163,7 @@ export class webRTC {
 
     // If the connection isn't stable yet, wait for it...
 
-    if (this.myPeerConnection.signalingState != "stable") {
+    if (this.myPeerConnection.signalingState !== "stable") {
       this.log(
         "  - But the signaling state isn't stable, so triggering rollback"
       );
@@ -171,9 +184,17 @@ export class webRTC {
 
     if (!this.webcamStream) {
       try {
-        this.webcamStream = await navigator.mediaDevices.getUserMedia(
+        // this.webcamStream = await navigator.mediaDevices.getUserMedia(
+        //   mediaConstraints
+        // );
+
+        this.webcamStream = await navigator.mediaDevices.getDisplayMedia(
           mediaConstraints
         );
+
+        const streamId = this.webcamStream.id;
+        streamStore.set(streamId, this.webcamStream);
+        Dispatch(setLocalStreamId(streamId));
       } catch (err) {
         this.handleGetUserMediaError(err);
         return;
@@ -201,7 +222,7 @@ export class webRTC {
       await this.myPeerConnection.createAnswer()
     );
     const message = new Message<ICallMessagePayload>(
-      {} as any,
+      this.me,
       MessageType.CALL_MESSAGE,
       "all",
       {
@@ -253,7 +274,7 @@ export class webRTC {
       // return to the caller. Another negotiationneeded event
       // will be fired when the state stabilizes.
 
-      if (this.myPeerConnection.signalingState != "stable") {
+      if (this.myPeerConnection.signalingState !== "stable") {
         this.log("-- The connection isn't stable yet; postponing...");
         return;
       }
@@ -293,7 +314,7 @@ export class webRTC {
     if (event.candidate) {
       this.log("*** Outgoing ICE candidate: " + event.candidate.candidate);
       const message = new Message<ICallMessagePayload>(
-        {} as any,
+        this.me,
         MessageType.CALL_MESSAGE,
         "all",
         {
@@ -341,8 +362,10 @@ export class webRTC {
     }
   };
 
-  private handleTrackEvent = () => {
-    this.log("*** Track event");
+  private handleTrackEvent = (event: any) => {
+    const streamId = event.streams[0].id;
+    streamStore.set(streamId, event.streams[0]);
+    Dispatch(setRemoteStreamId(streamId));
     // document.getElementById("received_video").srcObject = event.streams[0];
     // document.getElementById("hangup-button").disabled = false;
   };

@@ -1,0 +1,15 @@
+.call {
+    text-align: center;
+
+    &__local-stream,
+    &__remote-stream {
+        margin: 2rem 0;
+
+        video {
+            border: 1px solid gray;
+        }
+    }
+
+    &__remote-stream {
+    }
+}

@@ -6,6 +6,7 @@ import { UserMessages } from "./components/UserMessages";
 
 import "./chat.scss";
 import {
+  selectCallMode,
   selectJoined,
   selectRoomId,
   selectRoomLink,
@@ -13,10 +14,12 @@ import {
   selectUser,
 } from "./state/chatSelector";
 import { leaveRoom } from ".";
+import { Call } from "./components/Call";
 
 export const Chat: FC = () => {
   const dispatch = useDispatch();
   const joined = useSelector(selectJoined);
+  const callActivated = useSelector(selectCallMode);
   const roomName = useSelector(selectRoomName);
   const roomLink = useSelector(selectRoomLink);
   const roomId = useSelector(selectRoomId);
@@ -43,7 +46,7 @@ export const Chat: FC = () => {
         </div>
 
         <div className='chat__room-container'>
-          {joined && (
+          {joined && !callActivated && (
             <section className='room'>
               <header className='room__header'>
                 <h1>Room Name: {roomName}</h1>
@@ -82,6 +85,8 @@ export const Chat: FC = () => {
               </footer>
             </section>
           )}
+
+          {joined && callActivated && <Call></Call>}
         </div>
       </div>
     </>

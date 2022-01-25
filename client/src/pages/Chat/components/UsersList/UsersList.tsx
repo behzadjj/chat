@@ -14,7 +14,7 @@ export const UsersList: FC = () => {
 
   const handleCallClicked = (target: RoomUsers) => {
     console.log(target);
-    webRTC.Instance.start(target);
+    webRTC.Instance.start(target, user);
   };
 
   return (

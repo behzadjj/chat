@@ -12,6 +12,15 @@
     background-color: #f8f9fa;
     color: #17a2b8;
   }
+
+  &.accent {
+    background-color: #b84817;
+    &:hover,
+    &:active {
+      background-color: #f8f9fa;
+      color: #b84817;
+    }
+  }
 }
 
 .route-anchor {

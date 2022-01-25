@@ -5,6 +5,13 @@ export interface IChatState extends IRoom {
   user: RoomUsers;
   isCreator: boolean;
   joined: boolean;
+  videoCall: IVideoCallState;
+}
+
+export interface IVideoCallState {
+  streamId: string;
+  remoteStreamId: string;
+  activated: boolean;
 }
 
 export interface IRoom {

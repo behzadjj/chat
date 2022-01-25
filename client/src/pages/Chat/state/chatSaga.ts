@@ -1,7 +1,7 @@
 import { PayloadAction } from "@reduxjs/toolkit";
 import { call, put, select, takeEvery } from "redux-saga/effects";
 import { AxiosResponse } from "axios";
-import { ICallMessage } from "@chat/models";
+import { ICallMessage, RoomUsers } from "@chat/models";
 
 import { CreateResponse, RoomService } from "@chat/service/roomService";
 import {
@@ -85,7 +85,8 @@ function* handleLeaveRoom({ payload }: PayloadAction<LeavePayload>) {
 }
 
 function* handleReceivedCallMessaged({ payload }: PayloadAction<ICallMessage>) {
-  yield select(selectUser);
+  const user: RoomUsers = yield select(selectUser);
+  webRTC.Instance.me = user;
   yield webRTC.Instance.handleMessages(payload);
 }
 

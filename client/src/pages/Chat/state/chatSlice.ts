@@ -11,7 +11,11 @@ export type LeavePayload = { roomId: string; userId: string };
 const initialState: IChatState = {
   messages: [],
   roomName: undefined,
-  streamId: undefined,
+  videoCall: {
+    streamId: undefined,
+    remoteStreamId: undefined,
+    activated: false,
+  },
   roomId: undefined,
   user: {
     name: undefined,
@@ -55,7 +59,13 @@ export const chatSlice = createSlice({
       state.joined = payload;
     },
     setLocalStreamId(state, { payload }: PayloadAction<string>) {
-      state.streamId = payload;
+      state.videoCall.streamId = payload;
+    },
+    setRemoteStreamId(state, { payload }: PayloadAction<string>) {
+      state.videoCall.remoteStreamId = payload;
+    },
+    setCallActivated(state, { payload }: PayloadAction<boolean>) {
+      state.videoCall.activated = payload;
     },
     leaveRoom(_state, _: PayloadAction<LeavePayload>) {},
     receivedCallMessage(_state, _: PayloadAction<ICallMessage>) {},
@@ -72,6 +82,9 @@ export const {
   setJoined,
   leaveRoom,
   receivedCallMessage,
+  setRemoteStreamId,
+  setLocalStreamId,
+  setCallActivated,
 } = chatSlice.actions;
 
 export const chatReducer = chatSlice.reducer;
