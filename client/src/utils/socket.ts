@@ -1,9 +1,11 @@
-import { eventChannel } from "redux-saga";
+import { buffers, eventChannel } from "redux-saga";
 import { io, Socket } from "socket.io-client";
 
-export let socketChannel: {
-  chatRoom: Socket;
-} = {} as any;
+type ISocketChannel = { [key: string]: Socket };
+
+export let socketChannel: ISocketChannel = {
+  chatRoom: undefined,
+} as ISocketChannel;
 
 export const initializeSocket = (userId: string, roomId: string) => {
   return io("http://localhost:5500", {
@@ -39,5 +41,5 @@ export const socketEventChannel = (socket: Socket) => {
     };
 
     return unsubscribe;
-  });
+  }, buffers.sliding(20));
 };
