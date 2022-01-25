@@ -219,7 +219,7 @@ export class webRTC {
       }
     );
 
-    socketChannel.emit("chat-room", Message.serialize(message));
+    socketChannel.chatRoom.emit("chat-room", Message.serialize(message));
   };
 
   private handleVideoAnswerMsg = async (msg: any) => {
@@ -287,7 +287,7 @@ export class webRTC {
         }
       );
 
-      socketChannel.emit("chat-room", Message.serialize(message));
+      socketChannel.chatRoom.emit("chat-room", Message.serialize(message));
     } catch (err) {
       this.log(
         "*** The following error occurred while handling the negotiationneeded event:"
@@ -310,7 +310,7 @@ export class webRTC {
         }
       );
 
-      socketChannel.emit("chat-room", Message.serialize(message));
+      socketChannel.chatRoom.emit("chat-room", Message.serialize(message));
     }
   };
 

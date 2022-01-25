@@ -1,7 +1,16 @@
 import { PayloadAction } from "@reduxjs/toolkit";
-import { call, put, select, takeEvery } from "redux-saga/effects";
+import { call, fork, put, select, take, takeEvery } from "redux-saga/effects";
 import { AxiosResponse } from "axios";
-import { ICallMessage, RoomUsers } from "@chat/models";
+import { Socket } from "socket.io-client";
+import { EventChannel } from "redux-saga";
+import {
+  ICallMessage,
+  IMessages,
+  MessageType,
+  RoomUsers,
+  IChatMessage,
+  IUserListMessage,
+} from "@chat/models";
 
 import { CreateResponse, RoomService } from "@chat/service/roomService";
 import {
@@ -19,11 +28,31 @@ import {
   selectUser,
   selectRemoteStreamId,
   selectLocalStreamId,
+  setRoomMembers,
+  receivedCallMessage,
 } from ".";
-import { initializeSocket } from "@chat/utils";
-import { endCall, receivedCallMessage } from "./chatSlice";
+import { initializeSocket, socketEventChannel } from "@chat/utils";
 import { webRTC } from "@chat/utils/webrtc";
 import { streamStore } from "@chat/utils/stream-store";
+import { Message } from "@chat/implement";
+import { endCall } from "./chatSlice";
+
+function* defaultMessageHandler(stringMessage: string) {
+  const message = Message.deserialize(stringMessage) as IMessages;
+
+  if (message.type === MessageType.CHAT_MESSAGE) {
+    yield put(receivedMessage(message as IChatMessage));
+  }
+
+  if (message.type === MessageType.USERS_LIST) {
+    const usersMessage = message as IUserListMessage;
+    yield put(setRoomMembers(usersMessage.payload.users));
+  }
+  if (message.type === MessageType.CALL_MESSAGE) {
+    const callMessage = message as ICallMessage;
+    yield put(receivedCallMessage(callMessage));
+  }
+}
 
 function* handleClearChat() {
   yield console.log("hello there");
@@ -74,7 +103,26 @@ function* handleCreateRoom({ payload }: PayloadAction<CreatePayload>) {
 }
 
 function* handleRoomInitialized({ payload }: PayloadAction<InitializePayload>) {
-  yield initializeSocket(payload.userId, payload.room.roomId);
+  const socket: Socket = yield call(
+    initializeSocket,
+    payload.userId,
+    payload.room.roomId
+  );
+  const socketChannel: EventChannel<Socket> = yield call(
+    socketEventChannel,
+    socket
+  );
+  // yield initializeSocket(payload.userId, payload.room.roomId);
+
+  while (true) {
+    try {
+      // An error from socketChannel will cause the saga jump to the catch block
+      const payload: string = yield take(socketChannel);
+      yield fork(defaultMessageHandler, payload);
+    } catch (err) {
+      console.error("socket error:", err);
+    }
+  }
 }
 
 function* handleLeaveRoom({ payload }: PayloadAction<LeavePayload>) {

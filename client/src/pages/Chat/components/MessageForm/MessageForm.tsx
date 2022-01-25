@@ -39,7 +39,7 @@ export const MessageForm: FC = () => {
           }
         );
 
-        socketChannel.emit("chat-room", Message.serialize(message));
+        socketChannel.chatRoom.emit("chat-room", Message.serialize(message));
       }
       values.message = "";
     }
