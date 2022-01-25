@@ -17,10 +17,13 @@ import {
   setJoined,
   leaveRoom,
   selectUser,
+  selectRemoteStreamId,
+  selectLocalStreamId,
 } from ".";
 import { initializeSocket } from "@chat/utils";
-import { receivedCallMessage } from "./chatSlice";
+import { endCall, receivedCallMessage } from "./chatSlice";
 import { webRTC } from "@chat/utils/webrtc";
+import { streamStore } from "@chat/utils/stream-store";
 
 function* handleClearChat() {
   yield console.log("hello there");
@@ -90,6 +93,14 @@ function* handleReceivedCallMessaged({ payload }: PayloadAction<ICallMessage>) {
   yield webRTC.Instance.handleMessages(payload);
 }
 
+function* handleEndCall() {
+  const remoteStreamId: string = yield select(selectRemoteStreamId);
+  const localStreamId: string = yield select(selectLocalStreamId);
+  yield webRTC.Instance.closeVideoCall();
+  streamStore.set(remoteStreamId, undefined);
+  streamStore.set(localStreamId, undefined);
+}
+
 export function* chatSaga() {
   yield takeEvery(clearChat, handleClearChat);
   yield takeEvery(receivedMessage, handleClearChat);
@@ -98,4 +109,5 @@ export function* chatSaga() {
   yield takeEvery(roomInitialized, handleRoomInitialized);
   yield takeEvery(leaveRoom, handleLeaveRoom);
   yield takeEvery(receivedCallMessage, handleReceivedCallMessaged);
+  yield takeEvery(endCall, handleEndCall);
 }

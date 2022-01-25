@@ -26,7 +26,7 @@ export const UsersList: FC = () => {
           {members &&
             members.map((member) => (
               <div className='user-list-item' key={member.userId}>
-                <span>name: {member.name}</span>
+                <span>{member.name}</span>
                 &nbsp;
                 {member.rule === "moderator" && <span>*</span>}
                 {member.userId !== user.userId && (

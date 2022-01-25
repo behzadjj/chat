@@ -45,13 +45,7 @@ export class webRTC {
     this.log("Setting up connection to invite user: " + this.target.name);
     this.createPeerConnection();
 
-    // Get access to the webcam stream and attach it to the
-    // "preview" box (id "local_video").
-
     try {
-      // this.webcamStream = await navigator.mediaDevices.getUserMedia(
-      //   mediaConstraints
-      // );
       this.webcamStream = await navigator.mediaDevices.getDisplayMedia(
         mediaConstraints
       );
@@ -59,14 +53,10 @@ export class webRTC {
       const streamId = this.webcamStream.id;
       streamStore.set(streamId, this.webcamStream);
       Dispatch(setLocalStreamId(streamId));
-
-      // document.getElementById("local_video").srcObject = this.webcamStream;
     } catch (err) {
       this.handleGetUserMediaError(err);
       return;
     }
-
-    // Add the tracks from the stream to the RTCPeerConnection
 
     try {
       this.webcamStream.getTracks().forEach(
@@ -88,7 +78,6 @@ export class webRTC {
 
     this.myPeerConnection = new RTCPeerConnection({
       iceServers: [
-        // Information about ICE servers - Use your own!
         {
           urls: "stun:stun.l.google.com:19302",
         },
@@ -96,7 +85,6 @@ export class webRTC {
     });
 
     // Set up event handlers for the ICE negotiation process.
-
     this.myPeerConnection.onicecandidate = this.handleICECandidateEvent;
     this.myPeerConnection.oniceconnectionstatechange =
       this.handleICEConnectionStateChangeEvent;
@@ -199,8 +187,6 @@ export class webRTC {
         this.handleGetUserMediaError(err);
         return;
       }
-
-      //   document.getElementById("local_video").srcObject = this.webcamStream;
 
       // Add the camera stream to the RTCPeerConnection
 
@@ -366,13 +352,9 @@ export class webRTC {
     const streamId = event.streams[0].id;
     streamStore.set(streamId, event.streams[0]);
     Dispatch(setRemoteStreamId(streamId));
-    // document.getElementById("received_video").srcObject = event.streams[0];
-    // document.getElementById("hangup-button").disabled = false;
   };
 
-  private closeVideoCall() {
-    // var localVideo = document.getElementById("local_video");
-
+  closeVideoCall() {
     this.log("Closing the call");
 
     // Close the RTCPeerConnection
@@ -411,13 +393,10 @@ export class webRTC {
 
       this.myPeerConnection.close();
       this.myPeerConnection = null;
-      //   this.webcamStream = null;
+      Dispatch(setLocalStreamId(null));
+      Dispatch(setRemoteStreamId(null));
+      //   this.webcamStream = null
     }
-
-    // Disable the hangup button
-
-    // document.getElementById("hangup-button").disabled = true;
-    // targetUsername = null;
   }
 
   private handleGetUserMediaError = (event: any) => {

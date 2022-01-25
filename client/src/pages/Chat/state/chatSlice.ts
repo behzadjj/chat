@@ -67,6 +67,7 @@ export const chatSlice = createSlice({
     setCallActivated(state, { payload }: PayloadAction<boolean>) {
       state.videoCall.activated = payload;
     },
+    endCall() {},
     leaveRoom(_state, _: PayloadAction<LeavePayload>) {},
     receivedCallMessage(_state, _: PayloadAction<ICallMessage>) {},
   },
@@ -85,6 +86,7 @@ export const {
   setRemoteStreamId,
   setLocalStreamId,
   setCallActivated,
+  endCall,
 } = chatSlice.actions;
 
 export const chatReducer = chatSlice.reducer;
