@@ -35,9 +35,10 @@ import { initializeSocket, socketEventChannel } from "@chat/utils";
 import { webRTC } from "@chat/utils/webrtc";
 import { streamStore } from "@chat/utils/stream-store";
 import { Message } from "@chat/implement";
-import { endCall } from "./chatSlice";
+import { endCall, startCall } from "./chatSlice";
+import { handleMessages, handleStartCall } from "./webrtc";
 
-function* defaultMessageHandler(stringMessage: string) {
+function* socketMessageHandler(stringMessage: string) {
   const message = Message.deserialize(stringMessage) as IMessages;
 
   if (message.type === MessageType.CHAT_MESSAGE) {
@@ -50,7 +51,8 @@ function* defaultMessageHandler(stringMessage: string) {
   }
   if (message.type === MessageType.CALL_MESSAGE) {
     const callMessage = message as ICallMessage;
-    yield put(receivedCallMessage(callMessage));
+    yield fork(handleMessages, callMessage);
+    // yield put(receivedCallMessage(callMessage));
   }
 }
 
@@ -118,7 +120,7 @@ function* handleRoomInitialized({ payload }: PayloadAction<InitializePayload>) {
     try {
       // An error from socketChannel will cause the saga jump to the catch block
       const payload: string = yield take(socketChannel);
-      yield fork(defaultMessageHandler, payload);
+      yield fork(socketMessageHandler, payload);
     } catch (err) {
       console.error("socket error:", err);
     }
@@ -138,6 +140,9 @@ function* handleLeaveRoom({ payload }: PayloadAction<LeavePayload>) {
 function* handleReceivedCallMessaged({ payload }: PayloadAction<ICallMessage>) {
   const user: RoomUsers = yield select(selectUser);
   webRTC.Instance.me = user;
+  if (payload.from.userId === user.userId) {
+    return;
+  }
   yield webRTC.Instance.handleMessages(payload);
 }
 
@@ -158,4 +163,5 @@ export function* chatSaga() {
   yield takeEvery(leaveRoom, handleLeaveRoom);
   yield takeEvery(receivedCallMessage, handleReceivedCallMessaged);
   yield takeEvery(endCall, handleEndCall);
+  yield takeEvery(startCall, handleStartCall);
 }

@@ -1,8 +1,7 @@
 import { FC } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
-import { selectRoomMembers } from "@chat/pages";
-import { webRTC } from "@chat/utils/webrtc";
+import { selectRoomMembers, startCall } from "@chat/pages";
 import { selectUser } from "@chat/pages/Chat";
 
 import "./userList.scss";
@@ -11,10 +10,12 @@ import { RoomUsers } from "models";
 export const UsersList: FC = () => {
   const members = useSelector(selectRoomMembers);
   const user = useSelector(selectUser);
+  const dispatch = useDispatch();
 
   const handleCallClicked = (target: RoomUsers) => {
     console.log(target);
-    webRTC.Instance.start(target, user);
+    // webRTC.Instance.start(target, user);
+    dispatch(startCall(target));
   };
 
   return (

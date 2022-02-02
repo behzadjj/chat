@@ -1,7 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-param-reassign */
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { IChatMessage, IChatState, IRoom, ICallMessage } from "@chat/models";
+import {
+  IChatMessage,
+  IChatState,
+  IRoom,
+  ICallMessage,
+  RoomUsers,
+} from "@chat/models";
 
 export type JoinPayload = { roomId: string; username: string };
 export type CreatePayload = { roomName: string; username: string };
@@ -67,6 +73,7 @@ export const chatSlice = createSlice({
     setCallActivated(state, { payload }: PayloadAction<boolean>) {
       state.videoCall.activated = payload;
     },
+    startCall(_state, _: PayloadAction<RoomUsers>) {},
     endCall() {},
     leaveRoom(_state, _: PayloadAction<LeavePayload>) {},
     receivedCallMessage(_state, _: PayloadAction<ICallMessage>) {},
@@ -87,6 +94,7 @@ export const {
   setLocalStreamId,
   setCallActivated,
   endCall,
+  startCall,
 } = chatSlice.actions;
 
 export const chatReducer = chatSlice.reducer;
