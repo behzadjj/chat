@@ -57,7 +57,6 @@ export function* handleStartCall({ payload }: PayloadAction<RoomUsers>) {
     webcamStream = yield navigator.mediaDevices.getDisplayMedia(
       mediaConstraints
     );
-    console.log("here");
 
     const streamId = webcamStream.id;
     streamStore.set(streamId, webcamStream);
@@ -80,8 +79,14 @@ export function* handleStartCall({ payload }: PayloadAction<RoomUsers>) {
 }
 
 export function* createPeerConnection() {
+  myPeerConnection = new RTCPeerConnection({
+    iceServers: [
+      {
+        urls: "stun:stun.l.google.com:19302",
+      },
+    ],
+  });
   yield put(setCallActivated(true));
-  yield call(initialize);
 
   const callChannel: EventChannel<{
     type: callEventType;
@@ -136,16 +141,6 @@ export function* handleMessages(message: ICallMessage) {
   }
 }
 
-const initialize = () => {
-  myPeerConnection = new RTCPeerConnection({
-    iceServers: [
-      {
-        urls: "stun:stun.l.google.com:19302",
-      },
-    ],
-  });
-};
-
 const callEventChannel = (myPeerConnection: RTCPeerConnection) => {
   return eventChannel((emit) => {
     const callback =
@@ -183,8 +178,6 @@ const callEventChannel = (myPeerConnection: RTCPeerConnection) => {
 };
 
 function* eventHandler(evt: channelEvent) {
-  yield console.log(evt);
-
   switch (evt.type) {
     case callEventType.CONNECTION_STATE: {
       yield call(handleICEConnectionStateChangeEvent);
@@ -279,8 +272,6 @@ function* handleICEConnectionStateChangeEvent() {
 function* handleICECandidateEvent(event: any) {
   if (event.candidate) {
     yield fork(log, "*** Outgoing ICE candidate: " + event.candidate.candidate);
-
-    console.log(event.candidate);
     const message = new Message<ICallMessagePayload>(
       me,
       MessageType.CALL_MESSAGE,
@@ -345,8 +336,6 @@ function* handleNewICECandidateMsg(msg: any) {
     "*** Adding received ICE candidate: " + JSON.stringify(candidate)
   );
 
-  console.log(candidate);
-
   try {
     yield myPeerConnection.addIceCandidate(candidate);
   } catch (err) {
@@ -362,7 +351,7 @@ function* handleVideoOfferMsg(msg: any, user: RoomUsers) {
 
   yield fork(log, "Received video chat offer from " + target.name);
   if (!myPeerConnection) {
-    yield call(createPeerConnection);
+    yield fork(createPeerConnection);
   }
 
   // We need to set the remote description to the received SDP offer
@@ -398,8 +387,7 @@ function* handleVideoOfferMsg(msg: any, user: RoomUsers) {
       //   mediaConstraints
       // );
 
-      webcamStream = yield call(
-        navigator.mediaDevices.getDisplayMedia,
+      webcamStream = yield navigator.mediaDevices.getDisplayMedia(
         mediaConstraints
       );
 
@@ -432,7 +420,6 @@ function* handleVideoOfferMsg(msg: any, user: RoomUsers) {
 
   yield myPeerConnection.setLocalDescription(answer);
 
-  console.log(myPeerConnection.localDescription);
   const message = new Message<ICallMessagePayload>(
     me,
     MessageType.CALL_MESSAGE,
