@@ -5,7 +5,7 @@ import { Routes, Route, BrowserRouter, Navigate } from "react-router-dom";
 import { store } from "./redux";
 
 import { Chat } from "./pages";
-// We import bootstrap to make our application look better.
+
 import "bootstrap/dist/css/bootstrap.css";
 import "./style.scss";
 
@@ -14,9 +14,9 @@ ReactDOM.render(
     <Provider store={store}>
       <BrowserRouter>
         <Routes>
-          <Route exact path='/' element={<Chat />} />
-          <Route exact path='/:roomId' element={<Chat />} />
-          <Route exact path='' render={() => <Navigate to='/' />} />
+          <Route path='/' element={<Chat />} />
+          <Route path='/:roomId' element={<Chat />} />
+          <Route path='' element={() => <Navigate to='/' />} />
         </Routes>
       </BrowserRouter>
     </Provider>

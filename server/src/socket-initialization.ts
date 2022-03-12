@@ -51,7 +51,7 @@ export class SocketClass {
     this.server = http.createServer(app);
     this.io = new Server(this.server, {
       cors: {
-        origin: "http://localhost:3000",
+        origin: "*",
       },
     });
     this.io.on("connection", (socket) => {
@@ -76,13 +76,13 @@ export class SocketClass {
         // if (!room) {
         //   return;
         // }
-        const doConnect = Db.getDb();
+        // const doConnect = Db.getDb();
         // message.messageId = messageId;
 
-        doConnect.collection("chat").insertOne(message, (err) => {
-          if (err) throw err;
-          this.io.to("chat-room").emit("chat-room", JSON.stringify(message));
-        });
+        // doConnect.collection("chat").insertOne(message, (err) => {
+        //   if (err) throw err;
+        this.io.to("chat-room").emit("chat-room", JSON.stringify(message));
+        // });
       });
 
       socket.on("disconnect", (reason) => {
