@@ -8,6 +8,7 @@ import {
 } from "@chat/pages";
 import { streamStore } from "@chat/utils/stream-store";
 import { endCall } from "@chat/pages/Chat";
+import { selectStreamTarget } from "@chat/pages/Chat/state";
 
 import "./call.scss";
 
@@ -15,6 +16,7 @@ export const Call: FC = () => {
   const dispatch = useDispatch();
   const localStreamId = useSelector(selectLocalStreamId);
   const remoteStreamId = useSelector(selectRemoteStreamId);
+  const streamTarget = useSelector(selectStreamTarget);
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
 
@@ -56,11 +58,13 @@ export const Call: FC = () => {
   return (
     <section className='call'>
       <section className='call__local-stream'>
-        <video width={450} muted autoPlay ref={localVideoRef}></video>
+        <header>My Camera</header>
+        <video width='100%' muted autoPlay ref={localVideoRef}></video>
       </section>
 
       <section className='call__remote-stream'>
-        <video width={450} autoPlay ref={remoteVideoRef}></video>
+        <header>{streamTarget && streamTarget.name}</header>
+        <video width='100%' autoPlay ref={remoteVideoRef}></video>
       </section>
 
       <button

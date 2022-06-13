@@ -21,6 +21,7 @@ const initialState: IChatState = {
     streamId: undefined,
     remoteStreamId: undefined,
     activated: false,
+    userId: undefined,
   },
   roomId: undefined,
   user: {
@@ -70,6 +71,9 @@ export const chatSlice = createSlice({
     setRemoteStreamId(state, { payload }: PayloadAction<string>) {
       state.videoCall.remoteStreamId = payload;
     },
+    setStreamTarget(state, { payload }: PayloadAction<string>) {
+      state.videoCall.userId = payload;
+    },
     setCallActivated(state, { payload }: PayloadAction<boolean>) {
       state.videoCall.activated = payload;
     },
@@ -95,6 +99,7 @@ export const {
   setCallActivated,
   endCall,
   startCall,
+  setStreamTarget,
 } = chatSlice.actions;
 
 export const chatReducer = chatSlice.reducer;

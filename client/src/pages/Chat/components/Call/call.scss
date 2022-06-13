@@ -5,11 +5,22 @@
     &__remote-stream {
         margin: 2rem 0;
 
+        header {
+            text-align: initial;
+            padding-bottom: 1rem;
+            font-size: 2rem;
+        }
+
         video {
             border: 1px solid gray;
         }
     }
 
+    &__local-stream {
+        header {
+            color: green;
+        }
+    }
     &__remote-stream {
     }
 }

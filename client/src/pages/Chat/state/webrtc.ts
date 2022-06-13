@@ -14,6 +14,7 @@ import {
   setCallActivated,
   setLocalStreamId,
   setRemoteStreamId,
+  setStreamTarget,
 } from ".";
 import { PayloadAction } from "@reduxjs/toolkit";
 
@@ -345,6 +346,7 @@ function* handleNewICECandidateMsg(msg: any) {
 
 function* handleVideoOfferMsg(msg: any, user: RoomUsers) {
   target = user;
+  yield put(setStreamTarget(user.userId));
 
   // If we're not already connected, create an RTCPeerConnection
   // to be linked to the caller.
