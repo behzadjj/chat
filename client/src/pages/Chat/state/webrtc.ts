@@ -1,3 +1,4 @@
+import { selectStreamTarget } from "@chat/pages/Chat/state";
 import { Message } from "@chat/implement";
 import {
   ICallMessage,
@@ -87,6 +88,7 @@ export function* createPeerConnection() {
       },
     ],
   });
+
   yield put(setCallActivated(true));
 
   const callChannel: EventChannel<{
@@ -111,6 +113,7 @@ export function* handleMessages(message: ICallMessage) {
   if (me && message.from.userId === me.userId) {
     return;
   }
+  log("Handling message");
   switch (msg.type) {
     // Signaling messages: these messages are used to trade WebRTC
     // signaling information during negotiations leading up to a video
@@ -131,7 +134,11 @@ export function* handleMessages(message: ICallMessage) {
       break;
 
     case "hang-up": // The other peer has hung up the call
-      yield call(handleHangUpMsg);
+      // we will be sure if he is our contact.
+      if (message.payload.target === me.userId) {
+        yield call(handleHangUpMsg);
+        log("Call has been ended by other side.");
+      }
       break;
 
     // Unknown message; output to console for debugging.
@@ -140,6 +147,26 @@ export function* handleMessages(message: ICallMessage) {
       log_error("Unknown message received:");
       log_error(msg.type);
   }
+}
+
+export function* hangUpCall() {
+  // Sending end call message.
+  const target: RoomUsers = yield select(selectStreamTarget);
+  const message = new Message<ICallMessagePayload>(
+    me,
+    MessageType.CALL_MESSAGE,
+    "all",
+    {
+      name: me.name,
+      target: target.userId,
+      type: "hang-up",
+    }
+  );
+
+  socketChannel.chatRoom.emit("chat-room", Message.serialize(message));
+
+  // reset all values.
+  yield closeVideoCall();
 }
 
 const callEventChannel = (myPeerConnection: RTCPeerConnection) => {
@@ -463,6 +490,7 @@ function* handleGetUserMediaError(event: any) {
 
 function* closeVideoCall() {
   log("Closing the call");
+  console.log(myPeerConnection);
 
   // Close the RTCPeerConnection
 

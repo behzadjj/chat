@@ -32,11 +32,10 @@ import {
   receivedCallMessage,
 } from ".";
 import { initializeSocket, socketEventChannel } from "@chat/utils";
-import { webRTC } from "@chat/utils/webrtc";
 import { streamStore } from "@chat/utils/stream-store";
 import { Message } from "@chat/implement";
 import { endCall, startCall } from "./chatSlice";
-import { handleMessages, handleStartCall } from "./webrtc";
+import { handleMessages, handleStartCall, hangUpCall } from "./webrtc";
 
 function* socketMessageHandler(stringMessage: string) {
   const message = Message.deserialize(stringMessage) as IMessages;
@@ -139,17 +138,17 @@ function* handleLeaveRoom({ payload }: PayloadAction<LeavePayload>) {
 
 function* handleReceivedCallMessaged({ payload }: PayloadAction<ICallMessage>) {
   const user: RoomUsers = yield select(selectUser);
-  webRTC.Instance.me = user;
+  // webRTC.Instance.me = user;
   if (payload.from.userId === user.userId) {
     return;
   }
-  yield webRTC.Instance.handleMessages(payload);
+  yield fork(handleMessages, payload);
 }
 
 function* handleEndCall() {
   const remoteStreamId: string = yield select(selectRemoteStreamId);
   const localStreamId: string = yield select(selectLocalStreamId);
-  yield webRTC.Instance.closeVideoCall();
+  yield hangUpCall();
   streamStore.set(remoteStreamId, undefined);
   streamStore.set(localStreamId, undefined);
 }
