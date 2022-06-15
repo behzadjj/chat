@@ -13,6 +13,8 @@ export interface IVideoCallState {
   remoteStreamId: string;
   activated: boolean;
   userId: string;
+  callRequested: string;
+  ringing: string;
 }
 
 export interface IRoom {

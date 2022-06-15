@@ -8,12 +8,14 @@ import "./chat.scss";
 import {
   selectCallMode,
   selectJoined,
+  selectRingingUser,
   selectRoomId,
   selectRoomLink,
   selectRoomName,
   selectUser,
+  selectCallRequestingUser,
 } from "./state/chatSelector";
-import { leaveRoom } from ".";
+import { leaveRoom, answerCallRequest } from ".";
 import { Call } from "./components/Call";
 
 export const Chat: FC = () => {
@@ -24,6 +26,8 @@ export const Chat: FC = () => {
   const roomLink = useSelector(selectRoomLink);
   const roomId = useSelector(selectRoomId);
   const user = useSelector(selectUser);
+  const ringingUser = useSelector(selectRingingUser);
+  const requestCallUser = useSelector(selectCallRequestingUser);
 
   const handleLeaveClicked = () => {
     dispatch(
@@ -32,6 +36,10 @@ export const Chat: FC = () => {
         roomId,
       })
     );
+  };
+
+  const handleAcceptCallClicked = (answering: boolean) => {
+    dispatch(answerCallRequest(answering));
   };
 
   return (
@@ -89,6 +97,36 @@ export const Chat: FC = () => {
           {joined && callActivated && <Call></Call>}
         </div>
       </div>
+
+      {requestCallUser && (
+        <section className='call-modal'>
+          <h1>Video calling to: {requestCallUser.name}</h1>
+        </section>
+      )}
+
+      {ringingUser && (
+        <section className='call-modal'>
+          <h1>Incoming call from: {ringingUser.name}</h1>
+          <div className='call-modal__action'>
+            <button
+              className='chat-button'
+              onClick={() => {
+                handleAcceptCallClicked(true);
+              }}
+            >
+              Accept
+            </button>
+            <button
+              className='chat-button accent'
+              onClick={() => {
+                handleAcceptCallClicked(false);
+              }}
+            >
+              Decline
+            </button>
+          </div>
+        </section>
+      )}
     </>
   );
 };

@@ -7,7 +7,7 @@ import {
   ICallMessage,
   IMessages,
   MessageType,
-  RoomUsers,
+  // RoomUsers,
   IChatMessage,
   IUserListMessage,
 } from "@chat/models";
@@ -25,17 +25,28 @@ import {
   LeavePayload,
   setJoined,
   leaveRoom,
-  selectUser,
+  // selectUser,
   selectRemoteStreamId,
   selectLocalStreamId,
   setRoomMembers,
-  receivedCallMessage,
+  // receivedCallMessage,
 } from ".";
 import { initializeSocket, socketEventChannel } from "@chat/utils";
 import { streamStore } from "@chat/utils/stream-store";
 import { Message } from "@chat/implement";
-import { endCall, startCall } from "./chatSlice";
-import { handleMessages, handleStartCall, hangUpCall } from "./webrtc";
+import {
+  answerCallRequest,
+  callRequest,
+  endCall,
+  startCall,
+} from "./chatSlice";
+import {
+  handleMessages,
+  handleStartCall,
+  hangUpCall,
+  handleCallRequest,
+  handleAnswerRequest,
+} from "./webrtc";
 
 function* socketMessageHandler(stringMessage: string) {
   const message = Message.deserialize(stringMessage) as IMessages;
@@ -51,7 +62,6 @@ function* socketMessageHandler(stringMessage: string) {
   if (message.type === MessageType.CALL_MESSAGE) {
     const callMessage = message as ICallMessage;
     yield fork(handleMessages, callMessage);
-    // yield put(receivedCallMessage(callMessage));
   }
 }
 
@@ -136,14 +146,14 @@ function* handleLeaveRoom({ payload }: PayloadAction<LeavePayload>) {
   }
 }
 
-function* handleReceivedCallMessaged({ payload }: PayloadAction<ICallMessage>) {
-  const user: RoomUsers = yield select(selectUser);
-  // webRTC.Instance.me = user;
-  if (payload.from.userId === user.userId) {
-    return;
-  }
-  yield fork(handleMessages, payload);
-}
+// function* handleReceivedCallMessaged({ payload }: PayloadAction<ICallMessage>) {
+//   const user: RoomUsers = yield select(selectUser);
+//   // webRTC.Instance.me = user;
+//   if (payload.from.userId === user.userId) {
+//     return;
+//   }
+//   yield fork(handleMessages, payload);
+// }
 
 function* handleEndCall() {
   const remoteStreamId: string = yield select(selectRemoteStreamId);
@@ -160,7 +170,8 @@ export function* chatSaga() {
   yield takeEvery(createRoom, handleCreateRoom);
   yield takeEvery(roomInitialized, handleRoomInitialized);
   yield takeEvery(leaveRoom, handleLeaveRoom);
-  yield takeEvery(receivedCallMessage, handleReceivedCallMessaged);
   yield takeEvery(endCall, handleEndCall);
   yield takeEvery(startCall, handleStartCall);
+  yield takeEvery(callRequest, handleCallRequest);
+  yield takeEvery(answerCallRequest, handleAnswerRequest);
 }

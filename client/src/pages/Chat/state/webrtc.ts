@@ -1,3 +1,4 @@
+import { startCall } from "@chat/pages";
 import { selectStreamTarget } from "@chat/pages/Chat/state";
 import { Message } from "@chat/implement";
 import {
@@ -18,6 +19,8 @@ import {
   setStreamTarget,
 } from ".";
 import { PayloadAction } from "@reduxjs/toolkit";
+import { setRinging } from "./chatSlice";
+import { selectRingingUser, selectRoomMembers } from "./chatSelector";
 
 type channelEvent = {
   type: callEventType;
@@ -43,6 +46,41 @@ let target: RoomUsers;
 let me: RoomUsers;
 let webcamStream: MediaStream;
 export let transceiver: (track: any) => RTCRtpTransceiver;
+
+export function* handleCallRequest({ payload }: PayloadAction<RoomUsers>) {
+  me = yield select(selectUser);
+  const message = new Message<ICallMessagePayload>(
+    me,
+    MessageType.CALL_MESSAGE,
+    "all",
+    {
+      name: me.name,
+      target: payload.userId,
+      type: "call-request",
+    }
+  );
+
+  socketChannel.chatRoom.emit("chat-room", Message.serialize(message));
+}
+
+export function* handleAnswerRequest({ payload }: PayloadAction<boolean>) {
+  me = yield select(selectUser);
+  const ringingUser: RoomUsers = yield select(selectRingingUser);
+  const message = new Message<ICallMessagePayload>(
+    me,
+    MessageType.CALL_MESSAGE,
+    "all",
+    {
+      name: me.name,
+      target: ringingUser.userId,
+      type: "call-answer",
+      extra: payload,
+    }
+  );
+
+  socketChannel.chatRoom.emit("chat-room", Message.serialize(message));
+  yield put(setRinging(undefined));
+}
 
 export function* handleStartCall({ payload }: PayloadAction<RoomUsers>) {
   target = payload;
@@ -141,6 +179,23 @@ export function* handleMessages(message: ICallMessage) {
       }
       break;
 
+    case "call-request":
+      if (message.payload.target === me.userId) {
+        yield put(setRinging(message.from.userId));
+      }
+      break;
+
+    case "call-answer":
+      if (message.payload.target === me.userId) {
+        const users: Array<RoomUsers> = yield select(selectRoomMembers);
+        const foundedUser = users.find((x) => x.userId === message.from.userId);
+        if (foundedUser && message.payload.extra) {
+          yield put(startCall(foundedUser));
+        } else {
+          log("User rejected our call");
+        }
+      }
+      break;
     // Unknown message; output to console for debugging.
 
     default:

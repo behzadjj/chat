@@ -1,13 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-param-reassign */
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import {
-  IChatMessage,
-  IChatState,
-  IRoom,
-  ICallMessage,
-  RoomUsers,
-} from "@chat/models";
+import { IChatMessage, IChatState, IRoom, RoomUsers } from "@chat/models";
 
 export type JoinPayload = { roomId: string; username: string };
 export type CreatePayload = { roomName: string; username: string };
@@ -22,6 +16,8 @@ const initialState: IChatState = {
     remoteStreamId: undefined,
     activated: false,
     userId: undefined,
+    callRequested: undefined,
+    ringing: undefined,
   },
   roomId: undefined,
   user: {
@@ -77,10 +73,18 @@ export const chatSlice = createSlice({
     setCallActivated(state, { payload }: PayloadAction<boolean>) {
       state.videoCall.activated = payload;
     },
-    startCall(_state, _: PayloadAction<RoomUsers>) {},
+    setRinging(state, { payload }: PayloadAction<string>) {
+      state.videoCall.ringing = payload;
+    },
+    callRequest(state, { payload }: PayloadAction<RoomUsers>) {
+      state.videoCall.callRequested = payload.userId;
+    },
+    answerCallRequest(_state, _: PayloadAction<boolean>) {},
+    startCall(state, _: PayloadAction<RoomUsers>) {
+      state.videoCall.callRequested = undefined;
+    },
     endCall() {},
     leaveRoom(_state, _: PayloadAction<LeavePayload>) {},
-    receivedCallMessage(_state, _: PayloadAction<ICallMessage>) {},
   },
 });
 
@@ -93,13 +97,15 @@ export const {
   setRoomMembers,
   setJoined,
   leaveRoom,
-  receivedCallMessage,
   setRemoteStreamId,
   setLocalStreamId,
   setCallActivated,
   endCall,
   startCall,
   setStreamTarget,
+  callRequest,
+  answerCallRequest,
+  setRinging,
 } = chatSlice.actions;
 
 export const chatReducer = chatSlice.reducer;

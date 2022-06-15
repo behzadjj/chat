@@ -29,3 +29,15 @@ export const selectStreamTarget = (state: IReduxState): RoomUsers => {
     (x) => x.userId === state.chat.videoCall.userId
   );
 };
+
+export const selectCallRequestingUser = (state: IReduxState): RoomUsers => {
+  return state.chat.members.find(
+    (x) => x.userId === state.chat.videoCall.callRequested
+  );
+};
+
+export const selectRingingUser = (state: IReduxState): RoomUsers => {
+  return state.chat.members.find(
+    (x) => x.userId === state.chat.videoCall.ringing
+  );
+};

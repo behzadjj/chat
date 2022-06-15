@@ -51,6 +51,7 @@ export interface ICallMessagePayload {
   sdp?: RTCSessionDescription;
   name?: string;
   candidate?: any;
+  extra?: any;
 }
 
 /**
