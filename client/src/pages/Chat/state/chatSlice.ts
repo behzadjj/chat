@@ -5,7 +5,10 @@ import { IChatMessage, IChatState, IRoom, RoomUsers } from "@chat/models";
 
 export type JoinPayload = { roomId: string; username: string };
 export type CreatePayload = { roomName: string; username: string };
-export type InitializePayload = { room: IRoom; userId: string };
+export type InitializePayload = {
+  room: IRoom;
+  userId: string;
+};
 export type LeavePayload = { roomId: string; userId: string };
 
 const initialState: IChatState = {
@@ -53,6 +56,7 @@ export const chatSlice = createSlice({
       state.roomId = payload.room.roomId;
       state.roomName = payload.room.roomName;
       state.user.userId = payload.userId;
+      state.roomLink = payload.room.roomLink;
       state.joined = true;
     },
     setRoomMembers(state, { payload }: PayloadAction<IChatState["members"]>) {

@@ -79,9 +79,10 @@ function* handleJoinRoom({ payload }: PayloadAction<JoinPayload>) {
     );
     const roomLink = `${document.location.protocol}//${document.location.host}/${createResponse.data.room.roomId}`;
     navigator.clipboard.writeText(roomLink);
+
     yield put(
       roomInitialized({
-        room: createResponse.data.room,
+        room: { ...createResponse.data.room, roomLink },
         userId: createResponse.data.userId,
       })
     );
@@ -103,7 +104,7 @@ function* handleCreateRoom({ payload }: PayloadAction<CreatePayload>) {
     navigator.clipboard.writeText(roomLink);
     yield put(
       roomInitialized({
-        room: createResponse.data.room,
+        room: { ...createResponse.data.room, roomLink },
         userId: createResponse.data.userId,
       })
     );

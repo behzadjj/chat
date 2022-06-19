@@ -1,5 +1,6 @@
-import { FC } from "react";
+import { FC, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { Toast } from "primereact/toast";
 
 import { Gate, UsersList, MessageForm } from "./components";
 import { UserMessages } from "./components/UserMessages";
@@ -20,6 +21,7 @@ import { Call } from "./components/Call";
 
 export const Chat: FC = () => {
   const dispatch = useDispatch();
+  const toast = useRef(null);
   const joined = useSelector(selectJoined);
   const callActivated = useSelector(selectCallMode);
   const roomName = useSelector(selectRoomName);
@@ -38,12 +40,23 @@ export const Chat: FC = () => {
     );
   };
 
+  const handleRoomLinkClicked = () => {
+    toast.current.show({
+      severity: "success",
+      summary: "Room link",
+      detail: "The link has been copied to clipboard",
+      life: 3000,
+    });
+    navigator.clipboard.writeText(roomLink);
+  };
+
   const handleAcceptCallClicked = (answering: boolean) => {
     dispatch(answerCallRequest(answering));
   };
 
   return (
     <>
+      <Toast ref={toast} />
       <div className='chat'>
         <div className='chat__gate-container'>
           {!joined && (
@@ -62,16 +75,24 @@ export const Chat: FC = () => {
                 {
                   <>
                     <div className='room__header--actions'>
-                      <h3>
+                      {/* <h3>
                         Room link: <a href={roomLink}>Room</a>
-                      </h3>
+                      </h3> */}
+
+                      <button
+                        className='chat-button'
+                        type='submit'
+                        onClick={handleRoomLinkClicked}
+                      >
+                        <i className='pi pi-link'></i>
+                      </button>
 
                       <button
                         className='chat-button'
                         type='submit'
                         onClick={handleLeaveClicked}
                       >
-                        Leave
+                        <i className='pi pi-sign-out'></i>
                       </button>
                     </div>
                   </>
