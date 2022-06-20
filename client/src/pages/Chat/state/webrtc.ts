@@ -576,7 +576,9 @@ function* closeVideoCall() {
 
     myPeerConnection.close();
     myPeerConnection = null;
+    webcamStream = undefined;
     yield put(setLocalStreamId(null));
+
     yield put(setRemoteStreamId(null));
     //   this.webcamStream = null
   }
