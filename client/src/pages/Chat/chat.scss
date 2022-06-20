@@ -47,13 +47,9 @@
 }
 
 .call-modal {
-    margin: 4rem auto;
-    max-width: 60rem;
-    text-align: center;
-    border: 1px solid #b84817;
-    padding: 2rem;
-
+    padding: 0 3rem;
     &__action {
         margin-top: 2rem;
+        text-align: right;
     }
 }

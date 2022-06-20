@@ -37,7 +37,7 @@ export const UsersList: FC = () => {
                       handleCallClicked(member);
                     }}
                   >
-                    Call
+                    <i className='pi pi-phone'></i>
                   </button>
                 )}
               </div>

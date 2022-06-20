@@ -1,6 +1,7 @@
 import { FC, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Toast } from "primereact/toast";
+import { Dialog } from "primereact/dialog";
 
 import { Gate, UsersList, MessageForm } from "./components";
 import { UserMessages } from "./components/UserMessages";
@@ -75,10 +76,6 @@ export const Chat: FC = () => {
                 {
                   <>
                     <div className='room__header--actions'>
-                      {/* <h3>
-                        Room link: <a href={roomLink}>Room</a>
-                      </h3> */}
-
                       <button
                         className='chat-button'
                         type='submit'
@@ -126,27 +123,37 @@ export const Chat: FC = () => {
       )}
 
       {ringingUser && (
-        <section className='call-modal'>
-          <h1>Incoming call from: {ringingUser.name}</h1>
-          <div className='call-modal__action'>
-            <button
-              className='chat-button'
-              onClick={() => {
-                handleAcceptCallClicked(true);
-              }}
-            >
-              Accept
-            </button>
-            <button
-              className='chat-button accent'
-              onClick={() => {
-                handleAcceptCallClicked(false);
-              }}
-            >
-              Decline
-            </button>
-          </div>
-        </section>
+        <Dialog
+          visible
+          position='bottom'
+          onHide={() => {
+            handleAcceptCallClicked(false);
+          }}
+          breakpoints={{ "960px": "75vw", "640px": "100vw" }}
+          style={{ width: "50vw" }}
+          header={<h1>Incoming call from: {ringingUser.name}</h1>}
+        >
+          <section className='call-modal'>
+            <div className='call-modal__action'>
+              <button
+                className='chat-button'
+                onClick={() => {
+                  handleAcceptCallClicked(true);
+                }}
+              >
+                Accept
+              </button>
+              <button
+                className='chat-button accent'
+                onClick={() => {
+                  handleAcceptCallClicked(false);
+                }}
+              >
+                Decline
+              </button>
+            </div>
+          </section>
+        </Dialog>
       )}
     </>
   );
